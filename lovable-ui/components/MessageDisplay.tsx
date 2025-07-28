@@ -22,17 +22,18 @@ export default function MessageDisplay({ messages }: MessageDisplayProps) {
         const match = path.match(/\/app\/([^\/]+)\//);
         return match ? `/${match[1]}` : null;
       })
-      .filter(Boolean);
+      .filter((page): page is string => Boolean(page));
     
-    setGeneratedPages([...new Set(pages)]);
+    setGeneratedPages(Array.from(new Set(pages)));
   }, [messages]);
   
   if (messages.length === 0) return null;
   
   // Filter to show only assistant messages and tool uses
-  const displayMessages = messages.filter(m => 
-    m.type === 'assistant' || m.type === 'tool_use' || m.type === 'result'
-  );
+  const displayMessages = messages.filter(m => {
+    const messageAny = m as any;
+    return m.type === 'assistant' || messageAny.type === 'tool_use' || m.type === 'result';
+  });
   
   return (
     <div className="mt-8 max-w-4xl mx-auto px-4">
@@ -77,9 +78,10 @@ export default function MessageDisplay({ messages }: MessageDisplayProps) {
             }
             
             // Tool uses - show as compact status
-            if (message.type === 'tool_use') {
-              const toolName = (message as any).name;
-              const input = (message as any).input;
+            const messageAny = message as any;
+            if (messageAny.type === 'tool_use') {
+              const toolName = messageAny.name;
+              const input = messageAny.input;
               
               return (
                 <div key={index} className="animate-fadeIn">

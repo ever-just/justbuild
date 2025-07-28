@@ -1,6 +1,17 @@
 import { NextRequest } from "next/server";
 import { query } from "@anthropic-ai/claude-code";
 
+export async function OPTIONS(req: NextRequest) {
+  return new Response(null, {
+    status: 200,
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type",
+    },
+  });
+}
+
 export async function POST(req: NextRequest) {
   try {
     const { prompt } = await req.json();
@@ -24,6 +35,15 @@ export async function POST(req: NextRequest) {
       try {
         const abortController = new AbortController();
         let messageCount = 0;
+        
+        // Send heartbeat every 30 seconds to keep connection alive
+        const heartbeatInterval = setInterval(async () => {
+          try {
+            await writer.write(encoder.encode(": heartbeat\n\n"));
+          } catch (e) {
+            clearInterval(heartbeatInterval);
+          }
+        }, 30000);
         
         for await (const message of query({
           prompt: prompt,
@@ -65,11 +85,13 @@ export async function POST(req: NextRequest) {
         
         // Send completion signal
         await writer.write(encoder.encode("data: [DONE]\n\n"));
+        clearInterval(heartbeatInterval);
       } catch (error: any) {
         console.error("[API] Error during generation:", error);
         await writer.write(
           encoder.encode(`data: ${JSON.stringify({ error: error.message })}\n\n`)
         );
+        clearInterval(heartbeatInterval);
       } finally {
         await writer.close();
       }
@@ -80,6 +102,9 @@ export async function POST(req: NextRequest) {
         "Content-Type": "text/event-stream",
         "Cache-Control": "no-cache",
         "Connection": "keep-alive",
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type",
       },
     });
     

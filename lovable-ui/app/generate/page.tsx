@@ -54,13 +54,19 @@ function GeneratePageContent() {
   
   const generateWebsite = async () => {
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 600000); // 10 minute timeout
+      
       const response = await fetch("/api/generate-daytona", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ prompt }),
+        signal: controller.signal,
       });
+      
+      clearTimeout(timeoutId);
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -109,7 +115,15 @@ function GeneratePageContent() {
       }
     } catch (err: any) {
       console.error("Error generating website:", err);
-      setError(err.message || "An error occurred");
+      
+      if (err.name === 'AbortError') {
+        setError("Generation timed out after 10 minutes. Please try with a simpler prompt.");
+      } else if (err.message.includes('fetch') || err.message.includes('network')) {
+        setError("Network connection error. Please check your internet connection and try again.");
+      } else {
+        setError(err.message || "An error occurred while generating the website");
+      }
+      
       setIsGenerating(false);
     }
   };

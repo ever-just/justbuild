@@ -2,6 +2,17 @@ import { NextRequest } from "next/server";
 import { spawn } from "child_process";
 import path from "path";
 
+export async function OPTIONS(req: NextRequest) {
+  return new Response(null, {
+    status: 200,
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type",
+    },
+  });
+}
+
 export async function POST(req: NextRequest) {
   try {
     const { prompt } = await req.json();
@@ -43,6 +54,15 @@ export async function POST(req: NextRequest) {
         let sandboxId = "";
         let previewUrl = "";
         let buffer = "";
+        
+        // Send heartbeat every 30 seconds to keep connection alive
+        const heartbeatInterval = setInterval(async () => {
+          try {
+            await writer.write(encoder.encode(": heartbeat\n\n"));
+          } catch (e) {
+            clearInterval(heartbeatInterval);
+          }
+        }, 30000);
         
         // Capture stdout
         child.stdout.on("data", async (data) => {
@@ -168,6 +188,7 @@ export async function POST(req: NextRequest) {
         
         // Send done signal
         await writer.write(encoder.encode("data: [DONE]\n\n"));
+        clearInterval(heartbeatInterval);
       } catch (error: any) {
         console.error("[API] Error during generation:", error);
         await writer.write(
@@ -177,6 +198,7 @@ export async function POST(req: NextRequest) {
           })}\n\n`)
         );
         await writer.write(encoder.encode("data: [DONE]\n\n"));
+        clearInterval(heartbeatInterval);
       } finally {
         await writer.close();
       }
@@ -187,6 +209,9 @@ export async function POST(req: NextRequest) {
         "Content-Type": "text/event-stream",
         "Cache-Control": "no-cache",
         "Connection": "keep-alive",
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type",
       },
     });
     

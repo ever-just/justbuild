@@ -38,7 +38,7 @@ async function generateWebsiteInDaytona(
       console.log("1. Creating new Daytona sandbox...");
       
       // Add timeout and retry logic for sandbox creation
-      const createSandboxWithTimeout = async (timeoutMs: number = 60000) => {
+      const createSandboxWithTimeout = async (timeoutMs: number = 60000): Promise<any> => {
         return Promise.race([
           daytona.create({
             public: true,
@@ -51,13 +51,13 @@ async function generateWebsiteInDaytona(
       };
       
       try {
-        sandbox = await createSandboxWithTimeout(60000); // 60 second timeout
+        sandbox = await createSandboxWithTimeout(60000) as any; // 60 second timeout
         sandboxId = sandbox.id;
         console.log(`✓ Sandbox created: ${sandboxId}`);
       } catch (error: any) {
         if (error.message.includes('timed out')) {
           console.log(`⚠ Sandbox creation timed out, retrying with shorter timeout...`);
-          sandbox = await createSandboxWithTimeout(30000); // 30 second timeout
+          sandbox = await createSandboxWithTimeout(30000) as any; // 30 second timeout
           sandboxId = sandbox.id;
           console.log(`✓ Sandbox created on retry: ${sandboxId}`);
         } else {

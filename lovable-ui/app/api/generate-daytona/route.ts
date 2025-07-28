@@ -40,6 +40,8 @@ export async function POST(req: NextRequest) {
     
     // Start the async generation
     (async () => {
+      let heartbeatInterval: NodeJS.Timeout | undefined;
+      
       try {
         // Use the generate-in-daytona.ts script
         const scriptPath = path.join(process.cwd(), "scripts", "generate-in-daytona.ts");
@@ -56,11 +58,11 @@ export async function POST(req: NextRequest) {
         let buffer = "";
         
         // Send heartbeat every 30 seconds to keep connection alive
-        const heartbeatInterval = setInterval(async () => {
+        heartbeatInterval = setInterval(async () => {
           try {
             await writer.write(encoder.encode(": heartbeat\n\n"));
           } catch (e) {
-            clearInterval(heartbeatInterval);
+            if (heartbeatInterval) clearInterval(heartbeatInterval);
           }
         }, 30000);
         
@@ -188,7 +190,7 @@ export async function POST(req: NextRequest) {
         
         // Send done signal
         await writer.write(encoder.encode("data: [DONE]\n\n"));
-        clearInterval(heartbeatInterval);
+        if (heartbeatInterval) clearInterval(heartbeatInterval);
       } catch (error: any) {
         console.error("[API] Error during generation:", error);
         await writer.write(
@@ -198,7 +200,7 @@ export async function POST(req: NextRequest) {
           })}\n\n`)
         );
         await writer.write(encoder.encode("data: [DONE]\n\n"));
-        clearInterval(heartbeatInterval);
+        if (heartbeatInterval) clearInterval(heartbeatInterval);
       } finally {
         await writer.close();
       }

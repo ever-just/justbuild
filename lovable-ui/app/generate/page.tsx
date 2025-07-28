@@ -55,12 +55,14 @@ function GeneratePageContent() {
   const generateWebsite = async () => {
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 600000); // 10 minute timeout
+      const timeoutId = setTimeout(() => controller.abort(), 900000); // 15 minute timeout (increased)
       
       const response = await fetch("/api/generate-daytona", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "Cache-Control": "no-cache",
+          "Connection": "keep-alive",
         },
         body: JSON.stringify({ prompt }),
         signal: controller.signal,
@@ -69,8 +71,27 @@ function GeneratePageContent() {
       clearTimeout(timeoutId);
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to generate website");
+        let errorMessage = "Failed to generate website";
+        
+        // Enhanced error handling for different HTTP status codes
+        if (response.status === 502 || response.status === 503 || response.status === 504) {
+          errorMessage = `Server temporarily unavailable (${response.status}). This is likely a temporary issue - please try again.`;
+        } else if (response.status === 429) {
+          errorMessage = "Too many requests. Please wait a moment and try again.";
+        } else if (response.status >= 500) {
+          errorMessage = `Server error (${response.status}). Please try again or contact support if this persists.`;
+        } else if (response.status === 401 || response.status === 403) {
+          errorMessage = "Authentication error. Please refresh the page and try again.";
+        } else {
+          try {
+            const errorData = await response.json();
+            errorMessage = errorData.error || `Request failed (${response.status}). Please check your input and try again.`;
+          } catch {
+            errorMessage = `Request failed (${response.status}). Please check your input and try again.`;
+          }
+        }
+        
+        throw new Error(errorMessage);
       }
 
       const reader = response.body?.getReader();

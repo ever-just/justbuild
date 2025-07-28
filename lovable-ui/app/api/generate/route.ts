@@ -38,14 +38,15 @@ export async function POST(req: NextRequest) {
         const abortController = new AbortController();
         let messageCount = 0;
         
-        // Send heartbeat every 30 seconds to keep connection alive
+        // Send heartbeat every 15 seconds to prevent proxy timeouts
         heartbeatInterval = setInterval(async () => {
           try {
-            await writer.write(encoder.encode(": heartbeat\n\n"));
+            // Use SSE comment format to keep connection alive without triggering client events
+            await writer.write(encoder.encode(": keepalive\n\n"));
           } catch (e) {
             if (heartbeatInterval) clearInterval(heartbeatInterval);
           }
-        }, 30000);
+        }, 15000);
         
         for await (const message of query({
           prompt: prompt,

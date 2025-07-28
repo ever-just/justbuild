@@ -43,6 +43,8 @@ async function generateWebsiteInDaytona(
           daytona.create({
             public: true,
             image: "node:20",
+            autoStopInterval: 30, // Auto-stop after 30 minutes of inactivity
+            autoDeleteInterval: 60, // Auto-delete after 1 hour of being stopped
           }),
           new Promise((_, reject) => 
             setTimeout(() => reject(new Error(`Sandbox creation timed out after ${timeoutMs/1000}s`)), timeoutMs)
@@ -54,12 +56,14 @@ async function generateWebsiteInDaytona(
         sandbox = await createSandboxWithTimeout(60000) as any; // 60 second timeout
         sandboxId = sandbox.id;
         console.log(`✓ Sandbox created: ${sandboxId}`);
+        console.log(`  Auto-stop: 30 minutes | Auto-delete: 1 hour after stop`);
       } catch (error: any) {
         if (error.message.includes('timed out')) {
           console.log(`⚠ Sandbox creation timed out, retrying with shorter timeout...`);
           sandbox = await createSandboxWithTimeout(30000) as any; // 30 second timeout
           sandboxId = sandbox.id;
           console.log(`✓ Sandbox created on retry: ${sandboxId}`);
+          console.log(`  Auto-stop: 30 minutes | Auto-delete: 1 hour after stop`);
         } else {
           throw error;
         }
@@ -314,6 +318,16 @@ SCRIPT_EOF`,
       `- To reuse this sandbox: npx tsx scripts/generate-in-daytona.ts ${sandboxId}`
     );
     console.log(`- To remove: npx tsx scripts/remove-sandbox.ts ${sandboxId}`);
+    
+    // Optional: Auto-cleanup sandbox after successful generation
+    // Uncomment the lines below to automatically delete sandbox after completion
+    // console.log("\n🧹 Auto-cleaning up sandbox...");
+    // try {
+    //   await sandbox.delete();
+    //   console.log(`✅ Sandbox ${sandboxId} automatically cleaned up to save storage`);
+    // } catch (e) {
+    //   console.log(`⚠️ Auto-cleanup failed: ${e.message}. Use remove-sandbox.ts to clean up manually.`);
+    // }
 
     return {
       success: true,

@@ -17,9 +17,19 @@ async function removeSandbox(sandboxId: string) {
 
   try {
     console.log(`Removing sandbox: ${sandboxId}...`);
-    // Note: The remove method may not be available in the current Daytona SDK version
-    // await daytona.remove(sandboxId);
-    console.log("⚠ Sandbox removal not implemented - check Daytona SDK documentation");
+    
+    // First, find the sandbox
+    const sandboxes = await daytona.list();
+    const sandbox = sandboxes.find((s: any) => s.id === sandboxId);
+    
+    if (!sandbox) {
+      console.error(`❌ Sandbox ${sandboxId} not found`);
+      process.exit(1);
+    }
+    
+    // Delete the sandbox using the correct SDK method
+    await sandbox.delete();
+    console.log(`✅ Sandbox ${sandboxId} successfully deleted`);
   } catch (error: any) {
     console.error("Failed to remove sandbox:", error.message);
     process.exit(1);

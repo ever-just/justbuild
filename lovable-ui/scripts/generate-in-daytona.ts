@@ -36,12 +36,34 @@ async function generateWebsiteInDaytona(
       console.log(`✓ Connected to sandbox: ${sandbox.id}`);
     } else {
       console.log("1. Creating new Daytona sandbox...");
-      sandbox = await daytona.create({
-        public: true,
-        image: "node:20",
-      });
-      sandboxId = sandbox.id;
-      console.log(`✓ Sandbox created: ${sandboxId}`);
+      
+      // Add timeout and retry logic for sandbox creation
+      const createSandboxWithTimeout = async (timeoutMs: number = 60000) => {
+        return Promise.race([
+          daytona.create({
+            public: true,
+            image: "node:20",
+          }),
+          new Promise((_, reject) => 
+            setTimeout(() => reject(new Error(`Sandbox creation timed out after ${timeoutMs/1000}s`)), timeoutMs)
+          )
+        ]);
+      };
+      
+      try {
+        sandbox = await createSandboxWithTimeout(60000); // 60 second timeout
+        sandboxId = sandbox.id;
+        console.log(`✓ Sandbox created: ${sandboxId}`);
+      } catch (error: any) {
+        if (error.message.includes('timed out')) {
+          console.log(`⚠ Sandbox creation timed out, retrying with shorter timeout...`);
+          sandbox = await createSandboxWithTimeout(30000); // 30 second timeout
+          sandboxId = sandbox.id;
+          console.log(`✓ Sandbox created on retry: ${sandboxId}`);
+        } else {
+          throw error;
+        }
+      }
     }
 
     // Get the root directory
@@ -301,6 +323,28 @@ SCRIPT_EOF`,
     };
   } catch (error: any) {
     console.error("\n❌ ERROR:", error.message);
+    
+    // Enhanced error handling for common Daytona issues
+    if (error.message.includes('timed out')) {
+      console.error(`\n🔄 TIMEOUT: Daytona API took too long to respond.`);
+      console.error(`This is usually a temporary issue. Solutions:`);
+      console.error(`1. Try again in a few minutes`);
+      console.error(`2. Check Daytona service status at https://status.daytona.io`);
+      console.error(`3. Use the regular Claude Code generation instead`);
+    } else if (error.message.includes('401') || error.message.includes('Unauthorized')) {
+      console.error(`\n🔑 AUTH ERROR: Invalid Daytona API key.`);
+      console.error(`Please check your DAYTONA_API_KEY environment variable.`);
+    } else if (error.message.includes('network') || error.message.includes('fetch') || error.message.includes('connect')) {
+      console.error(`\n🌐 NETWORK ERROR: Cannot connect to Daytona API.`);
+      console.error(`This could be due to:`);
+      console.error(`1. Temporary network issues`);
+      console.error(`2. Daytona service downtime`);
+      console.error(`3. Firewall blocking the connection`);
+      console.error(`\nTry using the regular Claude Code generation instead.`);
+    } else if (error.message.includes('quota') || error.message.includes('limit')) {
+      console.error(`\n📊 QUOTA ERROR: Daytona usage limits reached.`);
+      console.error(`Please check your Daytona account quota.`);
+    }
 
     if (sandbox) {
       console.log(`\nSandbox ID: ${sandboxId}`);

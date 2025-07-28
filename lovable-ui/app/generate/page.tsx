@@ -24,6 +24,7 @@ function GeneratePageContent() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [useRegularGeneration, setUseRegularGeneration] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const hasStartedRef = useRef(false);
   
@@ -57,7 +58,8 @@ function GeneratePageContent() {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 900000); // 15 minute timeout (increased)
       
-      const response = await fetch("/api/generate-daytona", {
+      const apiEndpoint = useRegularGeneration ? "/api/generate" : "/api/generate-daytona";
+      const response = await fetch(apiEndpoint, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -138,9 +140,13 @@ function GeneratePageContent() {
       console.error("Error generating website:", err);
       
       if (err.name === 'AbortError') {
-        setError("Generation timed out after 10 minutes. Please try with a simpler prompt.");
+        setError("Generation timed out after 15 minutes. Please try with a simpler prompt or use the regular Claude Code generation.");
       } else if (err.message.includes('fetch') || err.message.includes('network')) {
         setError("Network connection error. Please check your internet connection and try again.");
+      } else if (err.message.includes('Daytona') || err.message.includes('sandbox') || err.message.includes('timed out')) {
+        setError("Daytona sandbox service is currently unavailable. This is usually temporary. You can try again in a few minutes or use the regular Claude Code generation instead.");
+      } else if (err.message.includes('TIMEOUT') || err.message.includes('AUTH ERROR') || err.message.includes('NETWORK ERROR')) {
+        setError(`${err.message}\n\nYou can try using the regular Claude Code generation as an alternative.`);
       } else {
         setError(err.message || "An error occurred while generating the website");
       }
@@ -188,8 +194,24 @@ function GeneratePageContent() {
         <div className="w-[30%] flex flex-col border-r border-gray-800">
           {/* Header */}
           <div className="p-4 border-b border-gray-800">
-            <h2 className="text-white font-semibold">Lovable</h2>
-            <p className="text-gray-400 text-sm mt-1 break-words">{prompt}</p>
+            <div className="flex items-center justify-between mb-2">
+              <h2 className="text-white font-semibold">Lovable</h2>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-gray-500">Generation:</span>
+                <button
+                  onClick={() => setUseRegularGeneration(!useRegularGeneration)}
+                  className={`px-2 py-1 text-xs rounded ${
+                    useRegularGeneration 
+                      ? 'bg-blue-600 text-white' 
+                      : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                  }`}
+                  disabled={isGenerating}
+                >
+                  {useRegularGeneration ? '🤖 Claude' : '🚀 Daytona'}
+                </button>
+              </div>
+            </div>
+            <p className="text-gray-400 text-sm break-words">{prompt}</p>
           </div>
           
           {/* Messages */}
@@ -235,6 +257,22 @@ function GeneratePageContent() {
             {error && (
               <div className="bg-red-900/20 border border-red-700 rounded-lg p-4">
                 <p className="text-red-400">{error}</p>
+                {(error.includes('Daytona') || error.includes('sandbox') || error.includes('timed out') || error.includes('TIMEOUT')) && !useRegularGeneration && (
+                  <div className="mt-3 pt-3 border-t border-red-700/30">
+                    <p className="text-gray-300 text-sm mb-2">Try regular Claude Code generation instead:</p>
+                    <button
+                      onClick={() => {
+                        setUseRegularGeneration(true);
+                        setError(null);
+                        setMessages([]);
+                        setPreviewUrl(null);
+                      }}
+                      className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm transition-colors"
+                    >
+                      🤖 Switch to Claude Code Generation
+                    </button>
+                  </div>
+                )}
               </div>
             )}
             

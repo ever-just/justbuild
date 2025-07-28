@@ -162,7 +162,7 @@ export default function Connect4() {
         href="/"
         className="mt-4 text-blue-300 hover:text-blue-400 transition-colors"
       >
-        ← Back to Lovable UI
+        ← Back to EverJust UI
       </a>
     </div>
   );

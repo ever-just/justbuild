@@ -195,7 +195,7 @@ function GeneratePageContent() {
           {/* Header */}
           <div className="p-4 border-b border-gray-800">
             <div className="flex items-center justify-between mb-2">
-              <h2 className="text-white font-semibold">Lovable</h2>
+              <h2 className="text-white font-semibold">EverJust</h2>
               <div className="flex items-center gap-2">
                 <span className="text-xs text-gray-500">Generation:</span>
                 <button
@@ -224,7 +224,7 @@ function GeneratePageContent() {
                       <div className="w-6 h-6 bg-purple-600 rounded-full flex items-center justify-center">
                         <span className="text-white text-xs">L</span>
                       </div>
-                      <span className="text-white font-medium">Lovable</span>
+                      <span className="text-white font-medium">EverJust</span>
                     </div>
                     <p className="text-gray-300 whitespace-pre-wrap break-words">{message.content}</p>
                   </div>
@@ -284,7 +284,7 @@ function GeneratePageContent() {
             <div className="flex items-center gap-2">
               <input
                 type="text"
-                placeholder="Ask Lovable..."
+                placeholder="Ask EverJust..."
                 className="flex-1 px-4 py-2 bg-gray-900 text-white rounded-lg border border-gray-800 focus:outline-none focus:border-gray-700"
                 disabled={isGenerating}
               />

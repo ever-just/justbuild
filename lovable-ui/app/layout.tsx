@@ -5,7 +5,7 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Lovable Clone - AI-Powered Code Generation",
+  title: "EverJust - AI-Powered Code Generation",
   description: "Build applications faster with AI-powered code generation",
 };
 

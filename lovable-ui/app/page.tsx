@@ -32,6 +32,15 @@ export default function Home() {
       <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto text-center">
           {/* Hero Section */}
+          {/* EverJust Logo */}
+          <div className="mb-8">
+            <img 
+              src="/everjust-logo-purple.png" 
+              alt="EverJust Logo" 
+              className="mx-auto w-32 h-32 md:w-40 md:h-40 object-contain drop-shadow-2xl"
+            />
+          </div>
+          
           <h1 className="text-4xl sm:text-4xl md:text-4xl font-bold text-white mb-6">
             Build something with EverJust
           </h1>

@@ -7,27 +7,12 @@ export default function Navbar() {
       <div className="flex items-center gap-10">
         <a
           href="/"
-          className="flex items-center gap-2 text-2xl font-semibold text-white hover:opacity-90 transition-opacity"
+          className="text-2xl font-semibold text-white hover:opacity-90 transition-opacity"
         >
-          {/* EverJust logo */}
-          <img src="/everjust-logo.svg" alt="EverJust" className="h-8 w-auto" />
           EverJust
         </a>
 
-        <div className="hidden md:flex items-center gap-8 text-sm text-gray-300">
-          <a href="#" className="hover:text-white transition-colors">
-            Community
-          </a>
-          <a href="#" className="hover:text-white transition-colors">
-            Enterprise
-          </a>
-          <a href="#" className="hover:text-white transition-colors">
-            Learn
-          </a>
-          <a href="#" className="hover:text-white transition-colors">
-            Shipped
-          </a>
-        </div>
+
       </div>
 
       {/* Auth buttons */}

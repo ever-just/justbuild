@@ -33,14 +33,7 @@ export default function Home() {
           <h1 className="text-4xl sm:text-4xl md:text-4xl font-bold text-white mb-6">
             Build something with EverJust
           </h1>
-          <h3 className="text-xl sm:text-xl text-gray-300 mb-12 max-w-2xl mx-auto">
-            BUILT WITH CLAUDE CODE
-          </h3>
 
-          <p className="text-xl sm:text-xl text-gray-300 mb-12 max-w-2xl mx-auto">
-            Turn your ideas into production-ready code in minutes. Powered by
-            Claude's advanced AI capabilities.
-          </p>
 
           {/* Input Section */}
           <div className="relative max-w-2xl mx-auto">

@@ -35,9 +35,9 @@ export default function Home() {
           {/* EverJust Logo */}
           <div className="mb-8">
             <img 
-              src="/everjust-logo-purple.png" 
+              src="/everjust-logo-purple2.png" 
               alt="EverJust Logo" 
-              className="mx-auto w-32 h-32 md:w-40 md:h-40 object-contain drop-shadow-2xl"
+              className="mx-auto w-40 h-40 md:w-48 md:h-48 object-contain drop-shadow-2xl"
             />
           </div>
           

@@ -214,15 +214,63 @@ SCRIPT_EOF`,
     console.log(`Prompt: "${prompt || "Create a modern blog website"}"`);
     console.log("\nThis may take several minutes...\n");
 
-    const genResult = await sandbox.process.executeCommand(
-      "node generate.js",
-      projectDir,
-      {
-        ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY,
-        NODE_PATH: `${projectDir}/node_modules`,
-      },
-      600000 // 10 minute timeout
-    );
+    // Enhanced generation with timeout handling and retry logic
+    let genResult;
+    let retryCount = 0;
+    const maxRetries = 2;
+    const baseTimeout = 1200000; // 20 minute timeout (increased from 10min)
+    
+    while (retryCount <= maxRetries) {
+      try {
+        console.log(retryCount > 0 ? `🔄 Retry attempt ${retryCount}/${maxRetries}...` : "🚀 Starting generation...");
+        
+        // Calculate timeout with progressive increase for retries
+        const currentTimeout = baseTimeout + (retryCount * 300000); // Add 5min per retry
+        console.log(`⏱️  Timeout set to ${currentTimeout / 60000} minutes`);
+        
+        // Send timeout warning at 80% of timeout period
+        const warningTimeout = setTimeout(() => {
+          console.log(`⚠️  Generation is taking longer than expected. Continuing...`);
+          console.log(`💡 Consider simplifying your prompt if this fails.`);
+        }, currentTimeout * 0.8);
+        
+        genResult = await sandbox.process.executeCommand(
+          "node generate.js",
+          projectDir,
+          {
+            ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY,
+            NODE_PATH: `${projectDir}/node_modules`,
+          },
+          currentTimeout
+        );
+        
+        clearTimeout(warningTimeout);
+        
+        // Success - break out of retry loop
+        break;
+        
+      } catch (error: any) {
+        retryCount++;
+        console.log(`\n❌ Generation attempt ${retryCount} failed:`, error.message);
+        
+        // Check if it's a timeout error
+        if (error.message.includes('timeout') || error.message.includes('timed out')) {
+          console.log(`🔄 TIMEOUT: Claude Code generation took longer than ${(baseTimeout + ((retryCount-1) * 300000)) / 60000} minutes`);
+          
+          if (retryCount <= maxRetries) {
+            console.log(`⏳ Retrying with extended timeout in 10 seconds...`);
+            console.log(`💡 Tip: Consider breaking your prompt into smaller, more specific requests`);
+            await new Promise(resolve => setTimeout(resolve, 10000)); // Wait 10 seconds before retry
+            continue;
+          } else {
+            throw new Error(`TIMEOUT: Claude Code generation consistently timed out after ${maxRetries + 1} attempts. The prompt may be too complex for automated generation. Try simplifying your request or using the regular Claude Code generation instead.`);
+          }
+        } else {
+          // Non-timeout error - don't retry
+          throw error;
+        }
+      }
+    }
 
     console.log("\nGeneration output:");
     console.log(genResult.result);
@@ -339,24 +387,32 @@ SCRIPT_EOF`,
     
     // Enhanced error handling for common Daytona issues
     if (error.message.includes('timed out')) {
-      console.error(`\n🔄 TIMEOUT: Daytona API took too long to respond.`);
-      console.error(`This is usually a temporary issue. Solutions:`);
-      console.error(`1. Try again in a few minutes`);
-      console.error(`2. Check Daytona service status at https://status.daytona.io`);
+      console.error(`\n🔄 TIMEOUT: Claude Code generation timed out.`);
+      console.error(`This usually means the prompt was too complex for automated generation.`);
+      console.error(`Solutions:`);
+      console.error(`1. Break your prompt into smaller, more specific requests`);
+      console.error(`2. Simplify the requirements`);
       console.error(`3. Use the regular Claude Code generation instead`);
     } else if (error.message.includes('401') || error.message.includes('Unauthorized')) {
-      console.error(`\n🔑 AUTH ERROR: Invalid Daytona API key.`);
-      console.error(`Please check your DAYTONA_API_KEY environment variable.`);
+      console.error(`\n🔑 AUTH ERROR: Invalid API keys.`);
+      console.error(`Please check your DAYTONA_API_KEY and ANTHROPIC_API_KEY environment variables.`);
     } else if (error.message.includes('network') || error.message.includes('fetch') || error.message.includes('connect')) {
-      console.error(`\n🌐 NETWORK ERROR: Cannot connect to Daytona API.`);
+      console.error(`\n🌐 NETWORK ERROR: Cannot connect to required services.`);
       console.error(`This could be due to:`);
       console.error(`1. Temporary network issues`);
-      console.error(`2. Daytona service downtime`);
-      console.error(`3. Firewall blocking the connection`);
+      console.error(`2. Service downtime (Daytona or Anthropic)`);
+      console.error(`3. Firewall blocking connections`);
       console.error(`\nTry using the regular Claude Code generation instead.`);
     } else if (error.message.includes('quota') || error.message.includes('limit')) {
-      console.error(`\n📊 QUOTA ERROR: Daytona usage limits reached.`);
-      console.error(`Please check your Daytona account quota.`);
+      console.error(`\n📊 QUOTA ERROR: Usage limits reached.`);
+      console.error(`Please check your Daytona or Anthropic account quotas.`);
+    } else if (error.message.includes('Generation failed')) {
+      console.error(`\n🤖 GENERATION ERROR: Claude Code could not complete the request.`);
+      console.error(`This may be due to:`);
+      console.error(`1. Prompt too complex or unclear`);
+      console.error(`2. Resource limitations in the sandbox`);
+      console.error(`3. Temporary service issues`);
+      console.error(`\nTry simplifying your prompt or use regular Claude Code generation.`);
     }
 
     if (sandbox) {

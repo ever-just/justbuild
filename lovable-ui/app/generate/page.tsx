@@ -5,7 +5,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
 
 interface Message {
-  type: "claude_message" | "tool_use" | "tool_result" | "progress" | "error" | "complete";
+  type: "claude_message" | "tool_use" | "tool_result" | "progress" | "error" | "complete" | "timeout_warning" | "timeout_info";
   content?: string;
   name?: string;
   input?: any;
@@ -56,7 +56,7 @@ function GeneratePageContent() {
   const generateWebsite = async () => {
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 900000); // 15 minute timeout (increased)
+      const timeoutId = setTimeout(() => controller.abort(), 1800000); // 30 minute timeout (increased from 15min to accommodate longer server timeouts)
       
       const apiEndpoint = useRegularGeneration ? "/api/generate" : "/api/generate-daytona";
       const response = await fetch(apiEndpoint, {
@@ -123,10 +123,21 @@ function GeneratePageContent() {
               const message = JSON.parse(data) as Message;
               
               if (message.type === "error") {
-                throw new Error(message.message);
+                // Check if it's actually a timeout error that was misclassified as network error
+                if (message.message?.includes('TIMEOUT') || message.message?.includes('timed out')) {
+                  throw new Error(`TIMEOUT: ${message.message}`);
+                } else {
+                  throw new Error(message.message);
+                }
               } else if (message.type === "complete") {
                 setPreviewUrl(message.previewUrl || null);
                 setIsGenerating(false);
+              } else if (message.type === "timeout_warning" || message.type === "timeout_info") {
+                // Add timeout warnings as special progress messages
+                setMessages((prev) => [...prev, {
+                  ...message,
+                  type: "progress" // Display as progress but with warning styling
+                }]);
               } else {
                 setMessages((prev) => [...prev, message]);
               }
@@ -140,12 +151,15 @@ function GeneratePageContent() {
       console.error("Error generating website:", err);
       
       if (err.name === 'AbortError') {
-        setError("Generation timed out after 15 minutes. Please try with a simpler prompt or use the regular Claude Code generation.");
-      } else if (err.message.includes('fetch') || err.message.includes('network')) {
-        setError("Network connection error. Please check your internet connection and try again.");
-      } else if (err.message.includes('Daytona') || err.message.includes('sandbox') || err.message.includes('timed out')) {
-        setError("Daytona sandbox service is currently unavailable. This is usually temporary. You can try again in a few minutes or use the regular Claude Code generation instead.");
-      } else if (err.message.includes('TIMEOUT') || err.message.includes('AUTH ERROR') || err.message.includes('NETWORK ERROR')) {
+        setError("Generation timed out after 30 minutes. Please try with a simpler prompt or use the regular Claude Code generation.");
+      } else if (err.message.includes('TIMEOUT')) {
+        // This is a Claude Code generation timeout, not a network error
+        setError(`⏱️ Generation Timeout: ${err.message.replace('TIMEOUT: ', '')}\n\n💡 Try breaking your prompt into smaller, more specific requests, or use the regular Claude Code generation instead.`);
+      } else if (err.message.includes('fetch') || err.message.includes('network') || err.message.includes('Failed to fetch')) {
+        setError("🌐 Network connection error. Please check your internet connection and try again.\n\nIf this persists, try using the regular Claude Code generation instead.");
+      } else if (err.message.includes('Daytona') || err.message.includes('sandbox')) {
+        setError("🚀 Daytona sandbox service is currently unavailable. This is usually temporary.\n\nYou can try again in a few minutes or use the regular Claude Code generation instead.");
+      } else if (err.message.includes('AUTH ERROR') || err.message.includes('NETWORK ERROR')) {
         setError(`${err.message}\n\nYou can try using the regular Claude Code generation as an alternative.`);
       } else {
         setError(err.message || "An error occurred while generating the website");
@@ -240,7 +254,11 @@ function GeneratePageContent() {
                 )}
                 
                 {message.type === "progress" && (
-                  <div className="text-gray-500 text-sm font-mono break-all">
+                  <div className={`text-sm font-mono break-all ${
+                    message.message?.includes('⚠️') || message.message?.includes('⏱️') || message.message?.includes('🔄') 
+                      ? 'text-yellow-400 bg-yellow-900/20 border border-yellow-700/30 rounded p-2' 
+                      : 'text-gray-500'
+                  }`}>
                     {message.message}
                   </div>
                 )}

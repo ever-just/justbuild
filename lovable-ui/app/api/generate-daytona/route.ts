@@ -67,7 +67,30 @@ export async function POST(req: NextRequest) {
           }
         }, 15000);
         
-        // Capture stdout
+        // Capture stderr
+        child.stderr.on("data", async (data) => {
+          const error = data.toString();
+          console.error("[Daytona Error]:", error);
+          
+          // Enhanced error categorization and messaging
+          if (error.includes("TIMEOUT") || error.includes("timed out")) {
+            await writer.write(
+              encoder.encode(`data: ${JSON.stringify({ 
+                type: "timeout_warning", 
+                message: "⏱️ Generation is taking longer than expected. This may indicate a complex prompt." 
+              })}\n\n`)
+            );
+          } else if (error.includes("Error") || error.includes("Failed")) {
+            await writer.write(
+              encoder.encode(`data: ${JSON.stringify({ 
+                type: "error", 
+                message: error.trim() 
+              })}\n\n`)
+            );
+          }
+        });
+        
+        // Capture stdout for timeout warnings and progress
         child.stdout.on("data", async (data) => {
           buffer += data.toString();
           const lines = buffer.split('\n');
@@ -75,6 +98,17 @@ export async function POST(req: NextRequest) {
           
           for (const line of lines) {
             if (!line.trim()) continue;
+            
+            // Check for timeout warnings and retry messages
+            if (line.includes('⚠️') || line.includes('🔄') || line.includes('⏱️')) {
+              await writer.write(
+                encoder.encode(`data: ${JSON.stringify({ 
+                  type: "timeout_info", 
+                  message: line.trim() 
+                })}\n\n`)
+              );
+              continue;
+            }
             
             // Parse Claude messages
             if (line.includes('__CLAUDE_MESSAGE__')) {
@@ -143,22 +177,6 @@ export async function POST(req: NextRequest) {
                 }
               }
             }
-          }
-        });
-        
-        // Capture stderr
-        child.stderr.on("data", async (data) => {
-          const error = data.toString();
-          console.error("[Daytona Error]:", error);
-          
-          // Only send actual errors, not debug info
-          if (error.includes("Error") || error.includes("Failed")) {
-            await writer.write(
-              encoder.encode(`data: ${JSON.stringify({ 
-                type: "error", 
-                message: error.trim() 
-              })}\n\n`)
-            );
           }
         });
         

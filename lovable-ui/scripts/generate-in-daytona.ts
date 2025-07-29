@@ -44,7 +44,6 @@ async function generateWebsiteInDaytona(
             public: true,
             image: "node:20",
             autoStopInterval: 30, // Auto-stop after 30 minutes of inactivity
-            autoDeleteInterval: 60, // Auto-delete after 1 hour of being stopped
           }),
           new Promise((_, reject) => 
             setTimeout(() => reject(new Error(`Sandbox creation timed out after ${timeoutMs/1000}s`)), timeoutMs)
@@ -56,7 +55,7 @@ async function generateWebsiteInDaytona(
         sandbox = await createSandboxWithTimeout(60000) as any; // 60 second timeout
         sandboxId = sandbox.id;
         console.log(`✓ Sandbox created: ${sandboxId}`);
-        console.log(`  Auto-stop: 30 minutes | Auto-delete: 1 hour after stop`);
+        console.log(`  Auto-stop: 30 minutes of inactivity`);
       } catch (error: any) {
         if (error.message.includes('timed out')) {
           console.log(`⚠ Sandbox creation timed out, retrying with shorter timeout...`);

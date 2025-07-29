@@ -20,10 +20,12 @@ export default function Home() {
       {/* Navbar */}
       <Navbar />
 
-      {/* Background image */}
+      {/* Background gradient */}
       <div
-        className="absolute inset-0 z-0 bg-cover bg-center"
-        style={{ backgroundImage: "url('/gradient.png')" }}
+        className="absolute inset-0 z-0"
+        style={{ 
+          background: "linear-gradient(135deg, #1e3a8a 0%, #3b82f6 25%, #8b5cf6 75%, #ec4899 100%)"
+        }}
       />
 
       {/* Content */}

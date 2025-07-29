@@ -9,7 +9,7 @@ export default function Navbar() {
           href="/"
           className="text-2xl font-semibold text-white hover:opacity-90 transition-opacity"
         >
-          EverJust
+          EVERJUST
         </a>
 
 

@@ -25,6 +25,51 @@ function GeneratePageContent() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [useRegularGeneration, setUseRegularGeneration] = useState(false);
+  
+  // Analyze prompt to automatically choose generation method
+  const analyzePromptComplexity = (prompt: string): boolean => {
+    const lowerPrompt = prompt.toLowerCase();
+    
+    // Keywords that indicate complex projects needing Daytona
+    const complexKeywords = [
+      'npm', 'yarn', 'install', 'dependencies', 'package',
+      'database', 'db', 'mongodb', 'postgresql', 'mysql', 'sqlite',
+      'full-stack', 'backend', 'api', 'server', 'express', 'fastify',
+      'next.js', 'react app', 'vue app', 'angular app', 'svelte app',
+      'typescript', 'build', 'webpack', 'vite', 'parcel',
+      'authentication', 'auth', 'login', 'user management',
+      'crud', 'rest api', 'graphql', 'websocket',
+      'docker', 'deployment', 'hosting'
+    ];
+    
+    // Keywords that indicate simple projects suitable for Regular Claude
+    const simpleKeywords = [
+      'simple', 'basic', 'static', 'landing page', 'homepage',
+      'html', 'css', 'vanilla', 'plain', 'minimal',
+      'portfolio', 'resume', 'business card', 'contact page',
+      'single page', 'one page', 'brochure'
+    ];
+    
+    // Count complex vs simple indicators
+    const complexScore = complexKeywords.reduce((score, keyword) => 
+      lowerPrompt.includes(keyword) ? score + 1 : score, 0);
+    const simpleScore = simpleKeywords.reduce((score, keyword) => 
+      lowerPrompt.includes(keyword) ? score + 1 : score, 0);
+    
+    // If clearly simple, use Regular Claude
+    if (simpleScore > complexScore && simpleScore >= 2) {
+      return true; // Use Regular Generation
+    }
+    
+    // If clearly complex, use Daytona
+    if (complexScore > 0) {
+      return false; // Use Daytona
+    }
+    
+    // Default to Daytona for ambiguous cases (better safe than sorry)
+    return false;
+  };
+  
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const hasStartedRef = useRef(false);
   
@@ -47,6 +92,10 @@ function GeneratePageContent() {
       return;
     }
     hasStartedRef.current = true;
+    
+    // Automatically choose generation method based on prompt analysis
+    const shouldUseRegular = analyzePromptComplexity(prompt);
+    setUseRegularGeneration(shouldUseRegular);
     
     setIsGenerating(true);
     generateWebsite();
@@ -211,18 +260,31 @@ function GeneratePageContent() {
             <div className="flex items-center justify-between mb-2">
               <h2 className="text-white font-semibold">EverJust</h2>
               <div className="flex items-center gap-2">
-                <span className="text-xs text-gray-500">Generation:</span>
-                <button
-                  onClick={() => setUseRegularGeneration(!useRegularGeneration)}
-                  className={`px-2 py-1 text-xs rounded ${
-                    useRegularGeneration 
-                      ? 'bg-blue-600 text-white' 
-                      : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                  }`}
-                  disabled={isGenerating}
-                >
-                  {useRegularGeneration ? '🤖 Claude' : '🚀 Daytona'}
-                </button>
+                <span className="text-xs text-gray-500">Auto-selected:</span>
+                <div className={`px-2 py-1 text-xs rounded ${
+                  useRegularGeneration 
+                    ? 'bg-blue-600 text-white' 
+                    : 'bg-purple-600 text-white'
+                }`}>
+                  {useRegularGeneration ? '🤖 Claude Code' : '🚀 Daytona Sandbox'}
+                </div>
+                {!isGenerating && (
+                  <button
+                    onClick={() => {
+                      setUseRegularGeneration(!useRegularGeneration);
+                      setError(null);
+                      setMessages([]);
+                      setPreviewUrl(null);
+                      hasStartedRef.current = false;
+                      setIsGenerating(true);
+                      generateWebsite();
+                    }}
+                    className="px-2 py-1 text-xs bg-gray-700 text-gray-300 hover:bg-gray-600 rounded"
+                    title="Try with other method"
+                  >
+                    ↻ Retry
+                  </button>
+                )}
               </div>
             </div>
             <p className="text-gray-400 text-sm break-words">{prompt}</p>
@@ -284,10 +346,13 @@ function GeneratePageContent() {
                         setError(null);
                         setMessages([]);
                         setPreviewUrl(null);
+                        hasStartedRef.current = false;
+                        setIsGenerating(true);
+                        generateWebsite();
                       }}
                       className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm transition-colors"
                     >
-                      🤖 Switch to Claude Code Generation
+                      🤖 Switch to Claude Code & Retry
                     </button>
                   </div>
                 )}

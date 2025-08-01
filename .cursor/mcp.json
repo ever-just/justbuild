@@ -1,0 +1,36 @@
+{
+  "mcpServers": {
+    "supabase": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@supabase/mcp-server-supabase@latest",
+        "--access-token",
+        "${SUPABASE_ACCESS_TOKEN}"
+      ]
+    },
+    "github": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "env": {
+        "GITHUB_TOKEN": "${GITHUB_TOKEN}",
+        "GITHUB_OWNER": "everjust-dev"
+      }
+    },
+    "digitalocean": {
+      "command": "npx",
+      "args": ["-y", "@digitalocean/mcp-server"],
+      "env": {
+        "DIGITALOCEAN_ACCESS_TOKEN": "${DIGITALOCEAN_ACCESS_TOKEN}"
+      }
+    },
+    "auth0": {
+      "command": "npx",
+      "args": ["-y", "@auth0/auth0-mcp-server", "run"],
+      "capabilities": ["tools"],
+      "env": {
+        "DEBUG": "auth0-mcp"
+      }
+    }
+  }
+}

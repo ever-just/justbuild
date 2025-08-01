@@ -1,7 +1,7 @@
-# Lovable Clone
+# EverJust.dev Platform
 
-Thank you so much for checking out this project! 🙏  
-We appreciate your interest and hope you enjoy exploring and building with it.
+Thank you so much for checking out EverJust! 🚀  
+We appreciate your interest and hope you enjoy building the future of AI-powered development with us.
 
 ## Getting Started
 
@@ -19,15 +19,14 @@ DAYTONA_API_KEY=your_daytona_api_key
 
 ## Install & Run
 
-From the `lovable-ui` directory, install all dependencies and start the development server:
-
+From the `platform` directory, install all dependencies and start the development server:
 
 ```bash
-cd lovable-ui
+cd platform
 
 npm install
 npm run dev
 ```
 
-This will launch the app locally (by default at http://localhost:3000).
+This will launch EverJust locally (by default at http://localhost:3000).
 

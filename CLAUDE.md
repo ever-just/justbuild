@@ -1,5 +1,5 @@
 ## Project Goals
-- I am building a lovable clone, but I want to use the claude-code sdk
+- I am building EverJust.dev, an AI-powered development platform using the claude-code SDK
 
 ## Preferences
 - don't try to run the script with your own bash tool. Write the script and tell me how to execute it, asking me for its output instead.

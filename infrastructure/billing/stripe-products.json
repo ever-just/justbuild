@@ -1,0 +1,83 @@
+{
+  "stripe_products": {
+    "created_date": "2025-01-23",
+    "environment": "test",
+    "products": [
+      {
+        "name": "EverJust Pro",
+        "product_id": "prod_SmeGvOmvYw4xPG",
+        "price_id": "price_1Rr4xq4JaupPIbfY3NF89m8v",
+        "amount": 2900,
+        "currency": "usd",
+        "description": "Professional plan for EverJust.dev - Unlimited projects, custom domains, priority support, and advanced features",
+        "payment_link": "https://buy.stripe.com/test_8x28wI2Hx1j13MCghl3Ru01",
+        "features": [
+          "Unlimited projects",
+          "Custom domains",
+          "Priority support",
+          "Advanced features",
+          "GitHub integration",
+          "Real-time collaboration"
+        ]
+      },
+      {
+        "name": "EverJust Enterprise",
+        "product_id": "prod_SmeGoAQD4FeweS",
+        "price_id": "price_1Rr4y04JaupPIbfYx6F1qx9u",
+        "amount": 9900,
+        "currency": "usd",
+        "description": "Enterprise plan for EverJust.dev - Unlimited everything, dedicated support, custom integrations, white-label options, and SLA guarantees",
+        "payment_link": "https://buy.stripe.com/test_aFa3co1Dt5zh96W0in3Ru02",
+        "features": [
+          "Everything in Pro",
+          "Dedicated support",
+          "Custom integrations",
+          "White-label options",
+          "SLA guarantees",
+          "Team management",
+          "Advanced analytics",
+          "Priority deployment"
+        ]
+      },
+      {
+        "name": "EverJust Usage Credits",
+        "product_id": "prod_SmeGfCxtoZR4ao",
+        "price_id": "price_1Rr4yC4JaupPIbfYKlsFYP9g",
+        "amount": 1000,
+        "currency": "usd",
+        "description": "Pay-as-you-go credits for EverJust.dev - Perfect for occasional users and project-based work. Credits never expire.",
+        "payment_link": "https://buy.stripe.com/test_4gM7sE5TJ5zh4QGd593Ru03",
+        "features": [
+          "Pay-as-you-go",
+          "Credits never expire",
+          "Perfect for occasional use",
+          "Project-based billing",
+          "Flexible usage"
+        ]
+      }
+    ],
+    "free_tier": {
+      "name": "EverJust Free",
+      "description": "Free tier for getting started with EverJust.dev",
+      "features": [
+        "3 projects per month",
+        "everjust.dev subdomain",
+        "Community support",
+        "Basic templates",
+        "GitHub integration"
+      ],
+      "limitations": [
+        "No custom domains",
+        "Limited to 3 projects",
+        "Community support only",
+        "Standard deployment priority"
+      ]
+    }
+  },
+  "integration_notes": {
+    "webhook_endpoints": "Configure webhooks for subscription events",
+    "customer_portal": "Enable Stripe customer portal for self-service",
+    "usage_tracking": "Implement usage tracking for credits system",
+    "subscription_management": "Handle upgrades/downgrades automatically"
+  }
+}

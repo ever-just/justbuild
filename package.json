@@ -1,9 +1,14 @@
 {
-  "name": "lovable-clone",
+  "name": "everjust-platform",
   "version": "1.0.0",
   "main": "index.js",
+  "workspaces": [
+    "platform"
+  ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "cd platform && npm run build",
+    "dev": "cd platform && npm run dev"
   },
   "keywords": [],
   "author": "",
@@ -14,5 +19,11 @@
     "@types/node": "^24.0.10",
     "tsx": "^4.20.3",
     "typescript": "^5.8.3"
+  },
+  "overrides": {
+    "react": "19.1.1",
+    "react-dom": "19.1.1",
+    "@typescript-eslint/eslint-plugin": "^7.18.0",
+    "@typescript-eslint/parser": "^7.18.0"
   }
 }

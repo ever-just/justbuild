@@ -12,21 +12,21 @@ The issue was a **timeout mismatch**:
 ## Fixes Implemented
 
 ### 1. Core Timeout Fix ✅
-**File:** `lovable-ui/scripts/generate-in-daytona.ts`
+**File:** `platform/scripts/generate-in-daytona.ts`
 - **Increased Step 7 timeout** from 10 minutes to 20 minutes
 - **Added progressive retry logic** with exponential backoff (20min → 25min → 30min)
 - **Added timeout warnings** at 80% of timeout period
 - **Maximum 3 retry attempts** with 10-second delays between retries
 
 ### 2. Enhanced Error Handling ✅
-**File:** `lovable-ui/app/api/generate-daytona/route.ts`
+**File:** `platform/app/api/generate-daytona/route.ts`
 - **Better error categorization** - distinguishes timeout vs network vs auth errors
 - **Real-time timeout warnings** streamed to client via Server-Sent Events
 - **Enhanced progress monitoring** for timeout-related messages
 - **Specific error types**: `timeout_warning`, `timeout_info`, `error`
 
 ### 3. Client-Side Improvements ✅
-**File:** `lovable-ui/app/generate/page.tsx`
+**File:** `platform/app/generate/page.tsx`
 - **Extended client timeout** from 15 minutes to 30 minutes
 - **Better error differentiation** - timeout errors no longer appear as "network connection" errors
 - **Enhanced UI feedback** - timeout warnings highlighted in yellow with warning styling

@@ -19,12 +19,7 @@ export default function Home() {
       <Navbar />
       
       {/* Background gradient */}
-      <div
-        className="absolute inset-0 z-0"
-        style={{ 
-          background: "linear-gradient(135deg, #1e3a8a 0%, #3b82f6 25%, #8b5cf6 75%, #ec4899 100%)"
-        }}
-      />
+      <div className="absolute inset-0 z-0 bg-gradient-to-br from-blue-900 via-blue-600 via-purple-500 to-pink-500" />
       
       {/* Content */}
       <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 sm:px-6 lg:px-8">

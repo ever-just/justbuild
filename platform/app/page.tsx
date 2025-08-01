@@ -19,7 +19,12 @@ export default function Home() {
       <Navbar />
       
       {/* Background gradient */}
-      <div className="absolute inset-0 z-0 bg-gradient-to-br from-blue-900 via-blue-600 via-purple-500 to-pink-500" />
+      <div 
+        className="absolute inset-0 z-0"
+        style={{
+          background: "linear-gradient(135deg, #1e3a8a 0%, #3b82f6 25%, #8b5cf6 75%, #ec4899 100%)"
+        }}
+      />
       
       {/* Content */}
       <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 sm:px-6 lg:px-8">
@@ -144,32 +149,6 @@ export default function Home() {
           </div>
         </div>
       </div>
-      
-      <style jsx>{`
-        @keyframes blob {
-          0% {
-            transform: translate(0px, 0px) scale(1);
-          }
-          33% {
-            transform: translate(30px, -50px) scale(1.1);
-          }
-          66% {
-            transform: translate(-20px, 20px) scale(0.9);
-          }
-          100% {
-            transform: translate(0px, 0px) scale(1);
-          }
-        }
-        .animate-blob {
-          animation: blob 7s infinite;
-        }
-        .animation-delay-2000 {
-          animation-delay: 2s;
-        }
-        .animation-delay-4000 {
-          animation-delay: 4s;
-        }
-      `}</style>
     </main>
   );
 }

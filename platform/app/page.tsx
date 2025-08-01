@@ -14,7 +14,7 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen relative overflow-hidden bg-black">
+    <main className="min-h-screen relative overflow-hidden">
       {/* Navbar */}
       <Navbar />
       

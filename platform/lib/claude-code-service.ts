@@ -102,9 +102,37 @@ export class ClaudeCodeService {
         allowedTools: config.allowedTools.filter(tool => tierConfig.allowedTools.includes(tool))
       };
 
+      // Ensure we have a valid project ID - create default project if needed
+      let validProjectId = config.projectId;
+      
+      // Check if projectId looks like our demo format and handle it
+      if (config.projectId.startsWith('demo-project-')) {
+        console.log(`[Claude] Creating default project for user ${config.userId}`);
+        
+        const { createProject, getUserByAuth0Id } = await import('./database');
+        const user = await getUserByAuth0Id(config.userId);
+        
+        if (user) {
+          const defaultProject = await createProject({
+            user_id: user.id,
+            name: 'Claude Code Demo Project',
+            description: 'Default project for Claude Code interactions'
+          });
+          
+          if (defaultProject) {
+            validProjectId = defaultProject.id;
+            console.log(`[Claude] Created default project ${validProjectId} for user ${config.userId}`);
+          } else {
+            throw new Error('Failed to create default project');
+          }
+        } else {
+          throw new Error('User not found for creating default project');
+        }
+      }
+
       // Create database session record
       const dbSession = await createProjectSession({
-        project_id: config.projectId,
+        project_id: validProjectId,
         sandbox_id: `claude-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
       });
 

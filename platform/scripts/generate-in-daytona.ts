@@ -52,14 +52,16 @@ async function generateWebsiteInDaytona(
       };
       
       try {
-        sandbox = await createSandboxWithTimeout(60000) as any; // 60 second timeout
+        console.log(`⏱️ Creating sandbox... (this may take up to 3 minutes)`);
+        console.log(`🔄 Please wait - Daytona is provisioning your development environment...`);
+        sandbox = await createSandboxWithTimeout(180000) as any; // 180 second timeout (3 minutes)
         sandboxId = sandbox.id;
         console.log(`✓ Sandbox created: ${sandboxId}`);
         console.log(`  Auto-stop: 30 minutes of inactivity`);
       } catch (error: any) {
         if (error.message.includes('timed out')) {
           console.log(`⚠ Sandbox creation timed out, retrying with shorter timeout...`);
-          sandbox = await createSandboxWithTimeout(30000) as any; // 30 second timeout
+          sandbox = await createSandboxWithTimeout(120000) as any; // 120 second timeout (2 minutes) for retry
           sandboxId = sandbox.id;
           console.log(`✓ Sandbox created on retry: ${sandboxId}`);
           console.log(`  Auto-stop: 30 minutes | Auto-delete: 1 hour after stop`);

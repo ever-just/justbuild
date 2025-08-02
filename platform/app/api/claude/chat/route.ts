@@ -122,7 +122,8 @@ export async function POST(req: NextRequest) {
         let messageCount = 0;
 
         // Process message and stream responses
-        for await (const message of claudeCodeService.processMessage(claudeSession.sessionId, prompt)) {
+        const messageStream = await claudeCodeService.processMessage(claudeSession.sessionId, prompt);
+        for await (const message of messageStream) {
           messageCount++;
           
           console.log(`[API] Message ${messageCount} - Type: ${message.type}, Tokens: ${message.tokenCount}`);

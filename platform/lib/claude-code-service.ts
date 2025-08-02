@@ -138,7 +138,7 @@ export class ClaudeCodeService {
   /**
    * Process a chat message with security filtering and token tracking
    */
-  async processMessage(sessionId: string, prompt: string): Promise<AsyncIterable<ClaudeMessage>> {
+  async *processMessage(sessionId: string, prompt: string): AsyncIterable<ClaudeMessage> {
     const session = this.activeSessions.get(sessionId);
     if (!session) {
       throw new Error('Session not found');
@@ -155,7 +155,10 @@ export class ClaudeCodeService {
     // Update last activity
     session.lastActivity = Date.now();
 
-    return this.streamClaudeResponse(session, prompt);
+    // Yield messages from the stream
+    for await (const message of this.streamClaudeResponse(session, prompt)) {
+      yield message;
+    }
   }
 
   /**

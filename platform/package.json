@@ -13,13 +13,12 @@
     "@auth0/nextjs-auth0": "3.5.0",
     "@daytonaio/sdk": "0.25.1",
     "@supabase/supabase-js": "^2.46.2",
-    "@tailwindcss/postcss": "^4.1.11",
     "autoprefixer": "^10.4.21",
     "dotenv": "^17.2.1",
     "next": "15.4.5",
     "react": "19.1.1",
     "react-dom": "19.1.1",
-    "tailwindcss": "4.1.11"
+    "tailwindcss": "^3.4.1"
   },
   "devDependencies": {
     "@types/node": "24.1.0",

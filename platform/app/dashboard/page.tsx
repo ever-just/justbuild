@@ -5,7 +5,6 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import UserDataComponent from '@/components/UserDataComponent';
-import { getUserProjects, ensureUserExists } from '@/lib/database';
 import type { User, Project } from '@/lib/supabase';
 
 // Using Project type from @/lib/supabase
@@ -24,7 +23,7 @@ function Dashboard() {
     }
   }, [auth0User, isLoading, router]);
 
-  // Fetch user data and projects from Supabase
+  // Fetch user data and projects from API
   useEffect(() => {
     async function fetchData() {
       if (!auth0User?.sub) {
@@ -34,19 +33,29 @@ function Dashboard() {
 
       try {
         // Ensure user exists in our database
-        const user = await ensureUserExists({
-          sub: auth0User.sub,
-          email: auth0User.email!,
-          name: auth0User.name || undefined,
-          picture: auth0User.picture || undefined,
+        const userResponse = await fetch('/api/user', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
         });
 
+        if (!userResponse.ok) {
+          throw new Error('Failed to create/fetch user');
+        }
+
+        const { user } = await userResponse.json();
+        
         if (user) {
           setDbUser(user);
           
           // Fetch user's projects
-          const userProjects = await getUserProjects(user.id);
-          setProjects(userProjects);
+          const projectsResponse = await fetch('/api/projects');
+          
+          if (projectsResponse.ok) {
+            const { projects: userProjects } = await projectsResponse.json();
+            setProjects(userProjects);
+          }
         }
       } catch (err) {
         console.error('Error fetching data:', err);

@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { useUser } from '@auth0/nextjs-auth0/client';
-import { getUserProjects, ensureUserExists, getUserByAuth0Id } from '@/lib/database';
 import type { User, Project } from '@/lib/supabase';
 
 export default function UserDataComponent() {
@@ -21,19 +20,29 @@ export default function UserDataComponent() {
 
       try {
         // Ensure user exists in our database
-        const dbUser = await ensureUserExists({
-          sub: auth0User.sub,
-          email: auth0User.email!,
-          name: auth0User.name || undefined,
-          picture: auth0User.picture || undefined,
+        const userResponse = await fetch('/api/user', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
         });
+
+        if (!userResponse.ok) {
+          throw new Error('Failed to create/fetch user');
+        }
+
+        const { user: dbUser } = await userResponse.json();
 
         if (dbUser) {
           setUser(dbUser);
           
           // Fetch user's projects
-          const userProjects = await getUserProjects(dbUser.id);
-          setProjects(userProjects);
+          const projectsResponse = await fetch('/api/projects');
+          
+          if (projectsResponse.ok) {
+            const { projects: userProjects } = await projectsResponse.json();
+            setProjects(userProjects);
+          }
         }
       } catch (err) {
         console.error('Error fetching user data:', err);

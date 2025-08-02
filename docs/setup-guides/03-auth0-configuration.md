@@ -3,6 +3,19 @@
 ## Overview
 Setting up Auth0 for EverJust.dev authentication with MCP tools for automation.
 
+## ⚠️ **Known Compatibility Issue - Next.js 15**
+
+**Expected Warnings**: You will see these warnings in the development console:
+```
+Error: Route "/api/auth/[...auth0]" used `params.auth0`. `params` should be awaited before using its properties.
+Error: Route "/api/auth" used `headers().get('x-forwarded-proto')`. `headers()` should be awaited before using its value.
+```
+
+**Status**: ✅ **NON-BLOCKING** - These warnings do not affect functionality  
+**Cause**: Auth0 SDK v3.5.0 has known compatibility issues with Next.js 15's async dynamic APIs  
+**Solution**: Auth0 is addressing this in v4 beta. We're monitoring for stable release.  
+**Action Required**: None - authentication works perfectly despite warnings
+
 ## Step 1: Create Auth0 Account
 
 ### Manual Setup (If needed)

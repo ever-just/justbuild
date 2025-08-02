@@ -29,6 +29,19 @@ export async function POST(req: NextRequest) {
     const encoder = new TextEncoder();
     const stream = new TransformStream();
     const writer = stream.writable.getWriter();
+    let streamClosed = false;
+    
+    // Helper function to safely write to stream
+    const safeWrite = async (data: Uint8Array): Promise<boolean> => {
+      if (streamClosed) return false;
+      try {
+        await writer.write(data);
+        return true;
+      } catch (error) {
+        streamClosed = true;
+        return false;
+      }
+    };
     
     // Start the async generation
     (async () => {
@@ -40,11 +53,13 @@ export async function POST(req: NextRequest) {
         
         // Send heartbeat every 15 seconds to prevent proxy timeouts
         heartbeatInterval = setInterval(async () => {
-          try {
-            // Use SSE comment format to keep connection alive without triggering client events
-            await writer.write(encoder.encode(": keepalive\n\n"));
-          } catch (e) {
-            if (heartbeatInterval) clearInterval(heartbeatInterval);
+          if (!streamClosed) {
+            const success = await safeWrite(encoder.encode(": keepalive\n\n"));
+            if (!success && heartbeatInterval) {
+              clearInterval(heartbeatInterval);
+            }
+          } else if (heartbeatInterval) {
+            clearInterval(heartbeatInterval);
           }
         }, 15000);
         
@@ -79,24 +94,32 @@ export async function POST(req: NextRequest) {
           }
           
           // Send the message to the client
-          await writer.write(
+          const success = await safeWrite(
             encoder.encode(`data: ${JSON.stringify(message)}\n\n`)
           );
+          if (!success) break;
         }
         
         console.log(`[API] Generation complete. Total messages: ${messageCount}`);
         
         // Send completion signal
-        await writer.write(encoder.encode("data: [DONE]\n\n"));
+        await safeWrite(encoder.encode("data: [DONE]\n\n"));
         if (heartbeatInterval) clearInterval(heartbeatInterval);
       } catch (error: any) {
         console.error("[API] Error during generation:", error);
-        await writer.write(
+        await safeWrite(
           encoder.encode(`data: ${JSON.stringify({ error: error.message })}\n\n`)
         );
         if (heartbeatInterval) clearInterval(heartbeatInterval);
       } finally {
-        await writer.close();
+        streamClosed = true;
+        if (!writer.closed) {
+          try {
+            await writer.close();
+          } catch (e) {
+            // Stream already closed, ignore
+          }
+        }
       }
     })();
     

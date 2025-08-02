@@ -37,6 +37,19 @@ export async function POST(req: NextRequest) {
     const encoder = new TextEncoder();
     const stream = new TransformStream();
     const writer = stream.writable.getWriter();
+    let streamClosed = false;
+    
+    // Helper function to safely write to stream
+    const safeWrite = async (data: Uint8Array): Promise<boolean> => {
+      if (streamClosed) return false;
+      try {
+        await safeWrite(data);
+        return true;
+      } catch (error) {
+        streamClosed = true;
+        return false;
+      }
+    };
     
     // Start the async generation
     (async () => {
@@ -59,11 +72,13 @@ export async function POST(req: NextRequest) {
         
         // Send heartbeat every 15 seconds to prevent proxy timeouts  
         heartbeatInterval = setInterval(async () => {
-          try {
-            // Use SSE comment format to keep connection alive without triggering client events
-            await writer.write(encoder.encode(": keepalive\n\n"));
-          } catch (e) {
-            if (heartbeatInterval) clearInterval(heartbeatInterval);
+          if (!streamClosed) {
+            const success = await safeWrite(encoder.encode(": keepalive\n\n"));
+            if (!success && heartbeatInterval) {
+              clearInterval(heartbeatInterval);
+            }
+          } else if (heartbeatInterval) {
+            clearInterval(heartbeatInterval);
           }
         }, 15000);
         
@@ -74,14 +89,14 @@ export async function POST(req: NextRequest) {
           
           // Enhanced error categorization and messaging
           if (error.includes("TIMEOUT") || error.includes("timed out")) {
-            await writer.write(
+            await safeWrite(
               encoder.encode(`data: ${JSON.stringify({ 
                 type: "timeout_warning", 
                 message: "⏱️ Generation is taking longer than expected. This may indicate a complex prompt." 
               })}\n\n`)
             );
           } else if (error.includes("Error") || error.includes("Failed")) {
-            await writer.write(
+            await safeWrite(
               encoder.encode(`data: ${JSON.stringify({ 
                 type: "error", 
                 message: error.trim() 
@@ -101,7 +116,7 @@ export async function POST(req: NextRequest) {
             
             // Check for timeout warnings and retry messages
             if (line.includes('⚠️') || line.includes('🔄') || line.includes('⏱️')) {
-              await writer.write(
+              await safeWrite(
                 encoder.encode(`data: ${JSON.stringify({ 
                   type: "timeout_info", 
                   message: line.trim() 
@@ -115,7 +130,7 @@ export async function POST(req: NextRequest) {
               const jsonStart = line.indexOf('__CLAUDE_MESSAGE__') + '__CLAUDE_MESSAGE__'.length;
               try {
                 const message = JSON.parse(line.substring(jsonStart).trim());
-                await writer.write(
+                await safeWrite(
                   encoder.encode(`data: ${JSON.stringify({ 
                     type: "claude_message", 
                     content: message.content 
@@ -130,7 +145,7 @@ export async function POST(req: NextRequest) {
               const jsonStart = line.indexOf('__TOOL_USE__') + '__TOOL_USE__'.length;
               try {
                 const toolUse = JSON.parse(line.substring(jsonStart).trim());
-                await writer.write(
+                await safeWrite(
                   encoder.encode(`data: ${JSON.stringify({ 
                     type: "tool_use", 
                     name: toolUse.name,
@@ -157,7 +172,7 @@ export async function POST(req: NextRequest) {
                   !output.includes('__')) {
                 
                 // Send as progress
-                await writer.write(
+                await safeWrite(
                   encoder.encode(`data: ${JSON.stringify({ 
                     type: "progress", 
                     message: output 
@@ -195,7 +210,7 @@ export async function POST(req: NextRequest) {
         
         // Send completion with preview URL
         if (previewUrl) {
-          await writer.write(
+          await safeWrite(
             encoder.encode(`data: ${JSON.stringify({ 
               type: "complete", 
               sandboxId,
@@ -208,20 +223,27 @@ export async function POST(req: NextRequest) {
         }
         
         // Send done signal
-        await writer.write(encoder.encode("data: [DONE]\n\n"));
+        await safeWrite(encoder.encode("data: [DONE]\n\n"));
         if (heartbeatInterval) clearInterval(heartbeatInterval);
       } catch (error: any) {
         console.error("[API] Error during generation:", error);
-        await writer.write(
+        await safeWrite(
           encoder.encode(`data: ${JSON.stringify({ 
             type: "error", 
             message: error.message 
           })}\n\n`)
         );
-        await writer.write(encoder.encode("data: [DONE]\n\n"));
+        await safeWrite(encoder.encode("data: [DONE]\n\n"));
         if (heartbeatInterval) clearInterval(heartbeatInterval);
       } finally {
-        await writer.close();
+        streamClosed = true;
+        if (!writer.closed) {
+          try {
+            await writer.close();
+          } catch (e) {
+            // Stream already closed, ignore
+          }
+        }
       }
     })();
     

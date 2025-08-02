@@ -121,12 +121,13 @@ export const createProject = async (projectData: {
   user_id: string;
   name: string;
   description?: string;
+  github_repo_url?: string;
 }): Promise<Project | null> => {
   try {
     const client = await pool.connect();
     const result = await client.query(
-      'INSERT INTO projects (user_id, name, description) VALUES ($1, $2, $3) RETURNING *',
-      [projectData.user_id, projectData.name, projectData.description]
+      'INSERT INTO projects (user_id, name, description, github_repo_url) VALUES ($1, $2, $3, $4) RETURNING *',
+      [projectData.user_id, projectData.name, projectData.description, projectData.github_repo_url]
     );
     client.release();
     

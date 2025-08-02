@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        p {
+            line-height: 1.6;
+            color: #666;
+        }
+        .button {
+            background-color: #007cba;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            display: block;
+            margin: 20px auto;
+        }
+        .button:hover {
+            background-color: #005a8b;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Test HTML Page</h1>
+        <p>This is a simple test page to verify HTML rendering works correctly.</p>
+        <p>Current time: <span id="time"></span></p>
+        <button class="button" onclick="updateTime()">Update Time</button>
+        <p>If you can see this page with proper styling and the button works, your HTML rendering is functioning correctly.</p>
+    </div>
+
+    <script>
+        function updateTime() {
+            document.getElementById('time').textContent = new Date().toLocaleString();
+        }
+        
+        // Initialize time on page load
+        updateTime();
+    </script>
+</body>
+</html>

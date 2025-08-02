@@ -33,10 +33,10 @@ export async function POST(request: NextRequest) {
     }
 
     const user = await ensureUserExists({
-      auth0_id: session.user.sub,
+      sub: session.user.sub,
       email: session.user.email,
       name: session.user.name,
-      avatar_url: session.user.picture
+      picture: session.user.picture
     });
 
     return NextResponse.json({ user });

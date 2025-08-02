@@ -89,22 +89,29 @@ export async function POST(req: NextRequest) {
           const error = data.toString();
           console.error("[Daytona Error]:", error);
           
-          // Enhanced error categorization and messaging
-          if (error.includes("TIMEOUT") || error.includes("timed out")) {
-            await safeWrite(
-              encoder.encode(`data: ${JSON.stringify({ 
-                type: "timeout_warning", 
-                message: "⏱️ Generation is taking longer than expected. This may indicate a complex prompt." 
-              })}\n\n`)
-            );
-          } else if (error.includes("Error") || error.includes("Failed")) {
-            await safeWrite(
-              encoder.encode(`data: ${JSON.stringify({ 
-                type: "error", 
-                message: error.trim() 
-              })}\n\n`)
-            );
-          }
+                  // Enhanced error categorization and messaging
+        if (error.includes("TIMEOUT") || error.includes("timed out")) {
+          await safeWrite(
+            encoder.encode(`data: ${JSON.stringify({ 
+              type: "timeout_warning", 
+              message: "⏱️ Generation is taking longer than expected. This may indicate a complex prompt." 
+            })}\n\n`)
+          );
+        } else if (error.includes("ENOTFOUND") || error.includes("ECONNREFUSED") || error.includes("network") || error.includes("Connection")) {
+          await safeWrite(
+            encoder.encode(`data: ${JSON.stringify({ 
+              type: "network_error", 
+              message: "🌐 Network connection error. The sandbox service is temporarily unavailable. Please try using the regular Claude Code generation instead." 
+            })}\n\n`)
+          );
+        } else if (error.includes("Error") || error.includes("Failed")) {
+          await safeWrite(
+            encoder.encode(`data: ${JSON.stringify({ 
+              type: "error", 
+              message: error.trim() 
+            })}\n\n`)
+          );
+        }
         });
         
         // Capture stdout for timeout warnings and progress

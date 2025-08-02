@@ -38,7 +38,7 @@ async function generateWebsiteInDaytona(
       console.log("1. Creating new Daytona sandbox...");
       
       // Add timeout and retry logic for sandbox creation
-      const createSandboxWithTimeout = async (timeoutMs: number = 60000): Promise<any> => {
+      const createSandboxWithTimeout = async (timeoutMs: number = 120000): Promise<any> => {
         return Promise.race([
           daytona.create({
             public: true,
@@ -46,7 +46,7 @@ async function generateWebsiteInDaytona(
             autoStopInterval: 30, // Auto-stop after 30 minutes of inactivity
           }),
           new Promise((_, reject) => 
-            setTimeout(() => reject(new Error(`Sandbox creation timed out after ${timeoutMs/1000}s`)), timeoutMs)
+            setTimeout(() => reject(new Error(`Sandbox creation timed out after ${timeoutMs/1000}s. Network connectivity issue detected.`)), timeoutMs)
           )
         ]);
       };

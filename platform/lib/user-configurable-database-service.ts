@@ -608,7 +608,7 @@ export class DatabaseSchemaTemplates {
         {
           from_table: 'posts',
           to_table: 'authors',
-          type: 'many_to_one',
+          type: 'one_to_many',
           foreign_key: 'author_id'
         }
       ],

@@ -1,19 +1,28 @@
-import { supabase } from './supabase';
+import { Pool } from 'pg';
 import type { User, Project, ProjectSession, Domain } from './supabase';
+
+// PostgreSQL connection pool
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+});
 
 // User management functions
 export const getUserByAuth0Id = async (auth0Id: string): Promise<User | null> => {
-  const { data, error } = await supabase
-    .from('users')
-    .select('*')
-    .eq('auth0_id', auth0Id)
-    .single();
+  try {
+    const client = await pool.connect();
+    const result = await client.query('SELECT * FROM users WHERE auth0_id = $1', [auth0Id]);
+    client.release();
+    
+    if (result.rows.length === 0) {
+      return null;
+    }
 
-  if (error) {
+    return result.rows[0] as User;
+  } catch (error) {
     console.error('Error fetching user:', error);
     return null;
   }
-  return data;
 };
 
 export const createUser = async (userData: {
@@ -22,35 +31,42 @@ export const createUser = async (userData: {
   name?: string;
   avatar_url?: string;
 }): Promise<User | null> => {
-  const { data, error } = await supabase
-    .from('users')
-    .insert([userData])
-    .select()
-    .single();
-
-  if (error) {
+  try {
+    const client = await pool.connect();
+    const result = await client.query(
+      'INSERT INTO users (auth0_id, email, name, avatar_url) VALUES ($1, $2, $3, $4) RETURNING *',
+      [userData.auth0_id, userData.email, userData.name, userData.avatar_url]
+    );
+    client.release();
+    
+    return result.rows[0] as User;
+  } catch (error) {
     console.error('Error creating user:', error);
     return null;
   }
-  return data;
 };
 
 export const updateUser = async (
   auth0Id: string,
   updates: Partial<User>
 ): Promise<User | null> => {
-  const { data, error } = await supabase
-    .from('users')
-    .update(updates)
-    .eq('auth0_id', auth0Id)
-    .select()
-    .single();
-
-  if (error) {
+  try {
+    const client = await pool.connect();
+    const result = await client.query(
+      'UPDATE users SET name = COALESCE($2, name), avatar_url = COALESCE($3, avatar_url), updated_at = NOW() WHERE auth0_id = $1 RETURNING *',
+      [auth0Id, updates.name, updates.avatar_url]
+    );
+    client.release();
+    
+    if (result.rows.length === 0) {
+      return null;
+    }
+    
+    return result.rows[0] as User;
+  } catch (error) {
     console.error('Error updating user:', error);
     return null;
   }
-  return data;
 };
 
 // Ensure user exists in database (for Auth0 integration)
@@ -84,17 +100,19 @@ export const ensureUserExists = async (auth0User: {
 
 // Project management functions
 export const getUserProjects = async (userId: string): Promise<Project[]> => {
-  const { data, error } = await supabase
-    .from('projects')
-    .select('*')
-    .eq('user_id', userId)
-    .order('last_active', { ascending: false });
-
-  if (error) {
+  try {
+    const client = await pool.connect();
+    const result = await client.query(
+      'SELECT * FROM projects WHERE user_id = $1 ORDER BY last_active DESC',
+      [userId]
+    );
+    client.release();
+    
+    return result.rows as Project[];
+  } catch (error) {
     console.error('Error fetching user projects:', error);
     return [];
   }
-  return data || [];
 };
 
 export const createProject = async (projectData: {
@@ -102,48 +120,55 @@ export const createProject = async (projectData: {
   name: string;
   description?: string;
 }): Promise<Project | null> => {
-  const { data, error } = await supabase
-    .from('projects')
-    .insert([projectData])
-    .select()
-    .single();
-
-  if (error) {
+  try {
+    const client = await pool.connect();
+    const result = await client.query(
+      'INSERT INTO projects (user_id, name, description) VALUES ($1, $2, $3) RETURNING *',
+      [projectData.user_id, projectData.name, projectData.description]
+    );
+    client.release();
+    
+    return result.rows[0] as Project;
+  } catch (error) {
     console.error('Error creating project:', error);
     return null;
   }
-  return data;
 };
 
 export const updateProject = async (
   projectId: string,
   updates: Partial<Project>
 ): Promise<Project | null> => {
-  const { data, error } = await supabase
-    .from('projects')
-    .update(updates)
-    .eq('id', projectId)
-    .select()
-    .single();
-
-  if (error) {
+  try {
+    const client = await pool.connect();
+    const result = await client.query(
+      'UPDATE projects SET name = COALESCE($2, name), description = COALESCE($3, description), updated_at = NOW() WHERE id = $1 RETURNING *',
+      [projectId, updates.name, updates.description]
+    );
+    client.release();
+    
+    if (result.rows.length === 0) {
+      return null;
+    }
+    
+    return result.rows[0] as Project;
+  } catch (error) {
     console.error('Error updating project:', error);
     return null;
   }
-  return data;
 };
 
 export const deleteProject = async (projectId: string): Promise<boolean> => {
-  const { error } = await supabase
-    .from('projects')
-    .delete()
-    .eq('id', projectId);
-
-  if (error) {
+  try {
+    const client = await pool.connect();
+    await client.query('DELETE FROM projects WHERE id = $1', [projectId]);
+    client.release();
+    
+    return true;
+  } catch (error) {
     console.error('Error deleting project:', error);
     return false;
   }
-  return true;
 };
 
 // Project session management functions
@@ -151,50 +176,60 @@ export const createProjectSession = async (sessionData: {
   project_id: string;
   sandbox_id: string;
 }): Promise<ProjectSession | null> => {
-  const { data, error } = await supabase
-    .from('project_sessions')
-    .insert([sessionData])
-    .select()
-    .single();
-
-  if (error) {
+  try {
+    const client = await pool.connect();
+    const result = await client.query(
+      'INSERT INTO project_sessions (project_id, sandbox_id) VALUES ($1, $2) RETURNING *',
+      [sessionData.project_id, sessionData.sandbox_id]
+    );
+    client.release();
+    
+    return result.rows[0] as ProjectSession;
+  } catch (error) {
     console.error('Error creating project session:', error);
     return null;
   }
-  return data;
 };
 
 export const updateProjectSession = async (
   sessionId: string,
   updates: Partial<ProjectSession>
 ): Promise<ProjectSession | null> => {
-  const { data, error } = await supabase
-    .from('project_sessions')
-    .update(updates)
-    .eq('id', sessionId)
-    .select()
-    .single();
-
-  if (error) {
+  try {
+    const client = await pool.connect();
+    const result = await client.query(
+      'UPDATE project_sessions SET status = COALESCE($2, status), last_commit_sha = COALESCE($3, last_commit_sha), updated_at = NOW() WHERE id = $1 RETURNING *',
+      [sessionId, updates.status, updates.last_commit_sha]
+    );
+    client.release();
+    
+    if (result.rows.length === 0) {
+      return null;
+    }
+    
+    return result.rows[0] as ProjectSession;
+  } catch (error) {
     console.error('Error updating project session:', error);
     return null;
   }
-  return data;
 };
 
 export const getActiveProjectSession = async (projectId: string): Promise<ProjectSession | null> => {
-  const { data, error } = await supabase
-    .from('project_sessions')
-    .select('*')
-    .eq('project_id', projectId)
-    .eq('status', 'active')
-    .order('created_at', { ascending: false })
-    .limit(1)
-    .single();
-
-  if (error) {
+  try {
+    const client = await pool.connect();
+    const result = await client.query(
+      'SELECT * FROM project_sessions WHERE project_id = $1 AND status = $2 ORDER BY created_at DESC LIMIT 1',
+      [projectId, 'active']
+    );
+    client.release();
+    
+    if (result.rows.length === 0) {
+      return null;
+    }
+    
+    return result.rows[0] as ProjectSession;
+  } catch (error) {
     console.error('Error fetching active project session:', error);
     return null;
   }
-  return data;
 };

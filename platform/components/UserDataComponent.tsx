@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useUser } from '@auth0/nextjs-auth0/client';
-import type { User, Project } from '@/lib/supabase';
+import type { User, Project } from '@/lib/database';
 
 export default function UserDataComponent() {
   const { user: auth0User, isLoading: auth0Loading } = useUser();

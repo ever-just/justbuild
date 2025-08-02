@@ -5,9 +5,9 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import UserDataComponent from '@/components/UserDataComponent';
-import type { User, Project } from '@/lib/supabase';
+import type { User, Project } from '@/lib/database';
 
-// Using Project type from @/lib/supabase
+// Using Project type from @/lib/database
 
 function Dashboard() {
   const { user: auth0User, error, isLoading } = useUser();

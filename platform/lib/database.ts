@@ -1,5 +1,54 @@
 import { Pool } from 'pg';
-import type { User, Project, ProjectSession, Domain } from './supabase';
+
+// Database schema types
+export interface User {
+  id: string;
+  auth0_id: string;
+  email: string;
+  name?: string;
+  avatar_url?: string;
+  subscription_tier: 'free' | 'pro' | 'enterprise';
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Project {
+  id: string;
+  user_id: string;
+  name: string;
+  description?: string;
+  github_repo_url?: string;
+  subdomain?: string;
+  custom_domain?: string;
+  status: 'draft' | 'active' | 'archived';
+  daytona_sandbox_id?: string;
+  conversation_history?: any; // JSON field for Claude conversations
+  last_active: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ProjectSession {
+  id: string;
+  project_id: string;
+  sandbox_id: string;
+  status: 'active' | 'stopped' | 'destroyed';
+  last_commit_sha?: string;
+  conversation_state?: any; // JSON field for chat state
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Domain {
+  id: string;
+  project_id: string;
+  domain: string;
+  type: 'subdomain' | 'custom';
+  status: 'pending' | 'active' | 'failed';
+  ssl_enabled: boolean;
+  created_at: string;
+  updated_at: string;
+}
 
 // PostgreSQL connection pool
 const pool = new Pool({

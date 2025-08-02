@@ -473,6 +473,7 @@ async function main() {
 
   try {
     await generateWebsiteInDaytona(sandboxId, prompt);
+    process.exit(0); // Exit successfully after completion
   } catch (error) {
     console.error("Failed to generate website:", error);
     process.exit(1);

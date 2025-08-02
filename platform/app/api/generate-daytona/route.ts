@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
     const safeWrite = async (data: Uint8Array): Promise<boolean> => {
       if (streamClosed) return false;
       try {
-        await safeWrite(data);
+        await writer.write(data);
         return true;
       } catch (error) {
         streamClosed = true;
@@ -51,6 +51,8 @@ export async function POST(req: NextRequest) {
       }
     };
     
+
+
     // Start the async generation
     (async () => {
       let heartbeatInterval: NodeJS.Timeout | undefined;

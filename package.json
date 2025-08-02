@@ -2,13 +2,10 @@
   "name": "everjust-platform",
   "version": "1.0.0",
   "main": "index.js",
-  "workspaces": [
-    "platform"
-  ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "cd platform && npm run build",
-    "dev": "cd platform && npm run dev"
+    "dev": "cd platform && PORT=3001 NODE_EXTRA_CA_CERTS=./certs/digitalocean-ca.crt npm run dev"
   },
   "keywords": [],
   "author": "",

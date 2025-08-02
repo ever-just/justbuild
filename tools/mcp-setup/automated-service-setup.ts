@@ -1,6 +1,6 @@
 /**
  * EverJust Platform - Automated Service Setup
- * Uses MCP tools to automate Auth0, Supabase, and GitHub setup
+ * Uses MCP tools to automate Auth0, DigitalOcean, and GitHub setup
  */
 
 interface SetupConfig {
@@ -16,17 +16,13 @@ interface SetupResults {
     clientId: string;
     success: boolean;
   };
-  supabase?: {
-    url: string;
-    anonKey: string;
+  digitalocean?: {
+    databaseUrl: string;
+    appUrl: string;
     success: boolean;
   };
   github?: {
     repoUrl: string;
-    success: boolean;
-  };
-  digitalocean?: {
-    appUrl: string;
     success: boolean;
   };
 }
@@ -48,10 +44,10 @@ export class EverJustSetup {
         await this.setupAuth0();
       }
 
-      // Step 2: Setup Supabase (if enabled)
-      if (this.config.enabledServices.includes('supabase')) {
-        await this.setupSupabase();
-      }
+          // Step 2: Setup DigitalOcean (if enabled)
+    if (this.config.enabledServices.includes('digitalocean')) {
+      await this.setupDigitalOcean();
+    }
 
       // Step 3: Setup GitHub Repository (if enabled)
       if (this.config.enabledServices.includes('github')) {
@@ -87,15 +83,15 @@ export class EverJustSetup {
         type: 'single_page_application',
         callbacks: [
           `https://${this.config.appDomain}/api/auth/callback`,
-          'http://localhost:3000/api/auth/callback'
+          'http://localhost:3001/api/auth/callback'
         ],
         web_origins: [
           `https://${this.config.appDomain}`,
-          'http://localhost:3000'
+          'http://localhost:3001'
         ],
         logout_urls: [
           `https://${this.config.appDomain}`,
-          'http://localhost:3000'
+          'http://localhost:3001'
         ]
       };
 
@@ -116,33 +112,34 @@ export class EverJustSetup {
     }
   }
 
-  private async setupSupabase(): Promise<void> {
-    console.log('💾 Setting up Supabase database...');
+  private async setupDigitalOcean(): Promise<void> {
+    console.log('💾 Setting up DigitalOcean database and app...');
     
     try {
       const dbConfig = {
         name: `${this.config.projectName}-db`,
         region: this.config.region,
-        plan: 'free'
+        size: 'db-s-2vcpu-4gb',
+        engine: 'postgresql'
       };
 
-      // MCP Supabase tool would be called here:
-      // const dbResult = await mcp_supabase_create_project(dbConfig);
+      // MCP DigitalOcean tool would be called here:
+      // const dbResult = await mcp_digitalocean_db_cluster_create(dbConfig);
 
-      this.results.supabase = {
-        url: 'https://generated-project.supabase.co',
-        anonKey: 'generated_anon_key',
+      this.results.digitalocean = {
+        databaseUrl: 'postgresql://everjust_app:password@host:25060/defaultdb',
+        appUrl: 'https://everjust.dev',
         success: true
       };
 
       // Create database schema
       await this.createDatabaseSchema();
 
-      console.log('✅ Supabase project created successfully');
+      console.log('✅ DigitalOcean database and app created successfully');
       
     } catch (error) {
-      console.error('❌ Supabase setup failed:', error);
-      this.results.supabase = { url: '', anonKey: '', success: false };
+      console.error('❌ DigitalOcean setup failed:', error);
+      this.results.digitalocean = { databaseUrl: '', appUrl: '', success: false };
     }
   }
 
@@ -184,8 +181,8 @@ export class EverJustSetup {
       ALTER TABLE projects ENABLE ROW LEVEL SECURITY;
     `;
 
-    // MCP Supabase tool would execute this:
-    // await mcp_supabase_execute_sql(schema);
+    // MCP DigitalOcean tool would execute this:
+    // await mcp_digitalocean_db_cluster_execute_sql(schema);
     
     console.log('✅ Database schema created');
   }
@@ -276,10 +273,8 @@ AUTH0_CLIENT_ID=${this.results.auth0?.clientId || 'your_client_id'}
 AUTH0_CLIENT_SECRET=your_client_secret_from_auth0_dashboard
 AUTH0_BASE_URL=https://${this.config.appDomain}
 
-# === SUPABASE DATABASE ===
-SUPABASE_URL=${this.results.supabase?.url || 'https://your-project.supabase.co'}
-SUPABASE_ANON_KEY=${this.results.supabase?.anonKey || 'your_anon_key'}
-SUPABASE_SERVICE_ROLE_KEY=your_service_role_key_from_supabase
+# === DIGITALOCEAN POSTGRESQL DATABASE ===
+DATABASE_URL=${this.results.digitalocean?.databaseUrl || 'postgresql://everjust_app:password@host:25060/defaultdb'}
 
 # === GITHUB INTEGRATION ===
 GITHUB_TOKEN=your_github_personal_access_token
@@ -311,7 +306,7 @@ export async function setupEverJustPlatform() {
     projectName: 'everjust-platform',
     appDomain: 'everjust.dev',
     region: 'nyc1',
-    enabledServices: ['auth0', 'supabase', 'github', 'digitalocean']
+    enabledServices: ['auth0', 'digitalocean', 'github']
   });
 
   try {
@@ -324,8 +319,8 @@ export async function setupEverJustPlatform() {
       console.log(`✅ Auth0: ${results.auth0.domain}`);
     }
     
-    if (results.supabase?.success) {
-      console.log(`✅ Supabase: ${results.supabase.url}`);
+    if (results.digitalocean?.success) {
+      console.log(`✅ DigitalOcean: ${results.digitalocean.appUrl}`);
     }
     
     if (results.github?.success) {

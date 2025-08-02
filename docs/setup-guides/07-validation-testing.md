@@ -43,11 +43,11 @@ Navigate to `/generate` and test:
 #### Test: API Endpoints
 ```bash
 # Test generation endpoints
-curl -X POST http://localhost:3000/api/generate \
+curl -X POST http://localhost:3001/api/generate \
   -H "Content-Type: application/json" \
   -d '{"prompt": "Create a hello world page"}'
 
-curl -X POST http://localhost:3000/api/generate-daytona \
+curl -X POST http://localhost:3001/api/generate-daytona \
   -H "Content-Type: application/json" \
   -d '{"prompt": "Create a React todo app"}'
 ```
@@ -129,28 +129,27 @@ validateSDKConnectivity().then(results => {
 
 ### 3. Database Integration Testing
 
-#### Test: Supabase Connection
+#### Test: Database Connection  
 File: `tools/validation/test-database.ts`
 ```typescript
-import { supabase } from '@/lib/supabase';
+import { pool } from '@/lib/database';
 
 export async function validateDatabase() {
   const results = {
     connection: false,
     tables: false,
-    rls: false,
+    schema: false,
     errors: [] as string[]
   };
 
   try {
     // Test basic connection
-    console.log('🗄️ Testing Supabase connection...');
-    const { data, error } = await supabase
-      .from('users')
-      .select('count')
-      .limit(1);
+    console.log('🗄️ Testing PostgreSQL connection...');
+    const client = await pool.connect();
+    const result = await client.query('SELECT 1 as test');
+    client.release();
 
-    if (error) throw error;
+    if (result.rows[0].test !== 1) throw new Error('Connection test failed');
     results.connection = true;
     console.log('✅ Database connection successful');
 
@@ -159,13 +158,15 @@ export async function validateDatabase() {
     const tables = ['users', 'projects', 'project_sessions', 'domains', 'deployments'];
     
     for (const table of tables) {
-      const { error: tableError } = await supabase
-        .from(table)
-        .select('*')
-        .limit(1);
+      const client = await pool.connect();
+      const result = await client.query(`
+        SELECT table_name FROM information_schema.tables 
+        WHERE table_schema = 'public' AND table_name = $1
+      `, [table]);
+      client.release();
       
-      if (tableError) {
-        throw new Error(`Table '${table}' not accessible: ${tableError.message}`);
+      if (result.rows.length === 0) {
+        throw new Error(`Table '${table}' does not exist`);
       }
     }
     
@@ -213,7 +214,7 @@ export async function validateAuth0() {
 
     // Test API routes exist
     console.log('🛣️ Testing Auth0 API routes...');
-    const response = await fetch('http://localhost:3000/api/auth/me');
+    const response = await fetch('http://localhost:3001/api/auth/me');
     // Should return 401 (unauthorized) when not logged in, which is expected
     if (response.status === 401) {
       results.apiRoutes = true;
@@ -244,7 +245,7 @@ export async function validateMCP() {
   const results = {
     toolCount: 0,
     digitalocean: false,
-    supabase: false,
+    database: false,
     auth0: false,
     github: false,
     performance: false,
@@ -269,7 +270,7 @@ export async function validateMCP() {
     console.log('✅ DigitalOcean MCP tools responsive');
 
     // Test other MCP servers...
-    results.supabase = true;
+    results.database = true;
     results.auth0 = true; 
     results.github = true;
 

@@ -127,26 +127,27 @@ export const ensureUserExists = async (auth0User: {
   name?: string;
   picture?: string;
 }): Promise<User | null> => {
-  // First, try to get existing user
-  let user = await getUserByAuth0Id(auth0User.sub);
-  
-  if (!user) {
-    // Create new user if doesn't exist
-    user = await createUser({
-      auth0_id: auth0User.sub,
-      email: auth0User.email,
-      name: auth0User.name,
-      avatar_url: auth0User.picture,
-    });
-  } else {
-    // Update user info if it exists (keep profile in sync)
-    user = await updateUser(auth0User.sub, {
-      name: auth0User.name,
-      avatar_url: auth0User.picture,
-    });
+  try {
+    const client = await pool.connect();
+    
+    // Use PostgreSQL's INSERT ... ON CONFLICT to handle race conditions
+    const result = await client.query(`
+      INSERT INTO users (auth0_id, email, name, avatar_url) 
+      VALUES ($1, $2, $3, $4)
+      ON CONFLICT (auth0_id) 
+      DO UPDATE SET 
+        name = EXCLUDED.name,
+        avatar_url = EXCLUDED.avatar_url,
+        updated_at = NOW()
+      RETURNING *
+    `, [auth0User.sub, auth0User.email, auth0User.name, auth0User.picture]);
+    
+    client.release();
+    return result.rows[0] as User;
+  } catch (error) {
+    console.error('Error ensuring user exists:', error);
+    return null;
   }
-  
-  return user;
 };
 
 // Project management functions

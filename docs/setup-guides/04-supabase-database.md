@@ -1,4 +1,4 @@
-# 💾 Database Setup & Configuration
+# 💾 DigitalOcean PostgreSQL Database Setup & Configuration
 
 ## Overview
 Setting up PostgreSQL database for EverJust.dev with user management and project storage. 
@@ -10,27 +10,25 @@ Setting up PostgreSQL database for EverJust.dev with user management and project
 - **Region:** NYC1 (optimal for DigitalOcean App Platform deployment)
 - **Host:** `everjust-platform-db-do-user-24253030-0.m.db.ondigitalocean.com:25060`
 
-## Step 1: Create Supabase Project
+## Step 1: Access DigitalOcean Database (Already Created)
 
-### Manual Setup (If needed)
-1. Go to [supabase.com](https://supabase.com) and create account
-2. Create new project
-3. Choose region (recommend US East for DigitalOcean compatibility)
-4. Note down your **URL** and **API Keys**
+### Production Database Details
+Your DigitalOcean PostgreSQL database is already configured:
+- **Connection**: Available in DigitalOcean Console → Databases → `everjust-platform-db`
+- **Username**: `everjust_app` (recommended) or `doadmin` (admin)  
+- **Database**: `defaultdb`
+- **SSL**: Required (already configured)
 
-### MCP Automated Setup (Recommended)
-```bash
-# Use Cursor MCP Supabase tools to automate setup
-# Available tools: supabase-create-project, supabase-run-sql
-```
+### Get Connection String
+1. Go to [DigitalOcean Databases](https://cloud.digitalocean.com/databases)
+2. Click `everjust-platform-db`
+3. Copy connection string for user `everjust_app`
 
 ## Step 2: Environment Variables
 
-Add to your `.env` file:
+Add to your `.env.local` file:
 ```env
-SUPABASE_URL=https://your-project.supabase.co
-SUPABASE_ANON_KEY=your_anon_key
-SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+DATABASE_URL=postgresql://everjust_app:password@host:25060/defaultdb
 ```
 
 ## Step 3: Database Schema

@@ -36,12 +36,10 @@ DAYTONA_API_KEY=your_daytona_api_key_here
 AUTH0_DOMAIN=your-tenant.auth0.com
 AUTH0_CLIENT_ID=your_auth0_client_id
 AUTH0_CLIENT_SECRET=your_auth0_client_secret
-AUTH0_CALLBACK_URL=http://localhost:3000/api/auth/callback
+AUTH0_CALLBACK_URL=http://localhost:3001/api/auth/callback
 
-# === DATABASE (Supabase) ===
-SUPABASE_URL=https://your-project.supabase.co
-SUPABASE_ANON_KEY=your_supabase_anon_key
-SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
+# === DATABASE (DigitalOcean PostgreSQL) ===
+DATABASE_URL=postgresql://everjust_app:password@your-db-host:25060/defaultdb
 
 # === DOMAIN MANAGEMENT (ENTRI.COM) ===
 ENTRI_API_KEY=your_entri_api_key
@@ -58,7 +56,7 @@ STRIPE_WEBHOOK_SECRET=whsec_webhook_secret
 
 # === DEVELOPMENT ===
 NODE_ENV=development
-NEXT_PUBLIC_APP_URL=http://localhost:3000
+NEXT_PUBLIC_APP_URL=http://localhost:3001
 ```
 
 ## 3. **Next.js 15 Upgrade** 
@@ -127,7 +125,7 @@ Follow `02-mcp-configuration.md` for detailed MCP setup.
 cd platform
 npm run dev
 
-# Verify at http://localhost:3000
+# Verify at http://localhost:3001
 ```
 
 ## 7. **Verification Checklist**

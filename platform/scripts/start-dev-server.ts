@@ -62,7 +62,7 @@ async function startDevServer(sandboxId: string, projectPath: string = "website-
     
     // Check if server is running
     const checkServer = await sandbox.process.executeCommand(
-      "curl -s -o /dev/null -w '%{http_code}' http://localhost:3000 || echo 'failed'",
+      "curl -s -o /dev/null -w '%{http_code}' http://localhost:3001 || echo 'failed'",
       projectDir
     );
     

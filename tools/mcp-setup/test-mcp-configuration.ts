@@ -29,7 +29,7 @@ export class MCPTester {
 
     const serverTests = [
       { name: 'auth0', description: 'Auth0 Authentication' },
-      { name: 'supabase', description: 'Supabase Database' },
+      { name: 'digitalocean', description: 'DigitalOcean Services' },
       { name: 'github', description: 'GitHub Repository Management' },
       { name: 'digitalocean-optimized', description: 'DigitalOcean App Platform (Optimized)' },
       { name: 'stripe', description: 'Stripe Billing (External)' },
@@ -106,7 +106,7 @@ export class MCPTester {
     // Mock data representing expected MCP server capabilities
     const serverData = {
       'auth0': { available: true, tools: 12, simulatedDelay: 150 },
-      'supabase': { available: true, tools: 18, simulatedDelay: 200 },
+      'digitalocean': { available: true, tools: 174, simulatedDelay: 300 },
       'github': { available: true, tools: 24, simulatedDelay: 300 },
       'digitalocean-optimized': { available: true, tools: 80, simulatedDelay: 400 },
       'stripe': { available: true, tools: 21, simulatedDelay: 100 },
@@ -200,33 +200,21 @@ export async function testAuth0MCP(): Promise<void> {
   }
 }
 
-export async function testSupabaseMCP(): Promise<void> {
-  console.log('💾 Testing Supabase MCP Tools...');
-  
-  try {
-    // Test database connection
-    console.log('  → Testing database connection...');
-    // await mcp_supabase_health_check();
-    
-    console.log('✅ Supabase MCP tools working correctly');
-  } catch (error) {
-    console.error('❌ Supabase MCP test failed:', error);
-  }
-}
-
 export async function testDigitalOceanMCP(): Promise<void> {
-  console.log('🌊 Testing DigitalOcean MCP Tools...');
+  console.log('💾 Testing DigitalOcean MCP Tools...');
   
   try {
     // Test account connection
-    console.log('  → Testing account access...');
-    // await mcp_digitalocean_balance_get();
+    console.log('  → Testing account connection...');
+    // await mcp_digitalocean_account_get_information();
     
     console.log('✅ DigitalOcean MCP tools working correctly');
   } catch (error) {
     console.error('❌ DigitalOcean MCP test failed:', error);
   }
 }
+
+
 
 // Main test runner
 export async function runMCPValidation(): Promise<MCPTestSummary> {
@@ -238,7 +226,6 @@ export async function runMCPValidation(): Promise<MCPTestSummary> {
   // Run individual service tests
   console.log('\n🔍 Running Individual Service Tests...');
   await testAuth0MCP();
-  await testSupabaseMCP();
   await testDigitalOceanMCP();
   
   console.log('\n🎯 MCP validation complete!');

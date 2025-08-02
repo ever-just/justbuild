@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "PORT=3001 NODE_EXTRA_CA_CERTS=./certs/digitalocean-ca.crt next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"

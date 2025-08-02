@@ -66,7 +66,7 @@ async function testPreviewUrl() {
     await new Promise(resolve => setTimeout(resolve, 10000));
 
     // Verify server is running
-    const checkServer = await sandbox.process.executeCommand("curl -s -o /dev/null -w '%{http_code}' http://localhost:3000");
+    const checkServer = await sandbox.process.executeCommand("curl -s -o /dev/null -w '%{http_code}' http://localhost:3001");
     console.log(`✓ Server status: ${checkServer.result}`);
 
     console.log("\n6. Getting preview URL using getPreviewLink()...");

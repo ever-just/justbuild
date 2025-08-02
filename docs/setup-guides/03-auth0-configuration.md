@@ -34,13 +34,13 @@ Error: Route "/api/auth" used `headers().get('x-forwarded-proto')`. `headers()` 
 ### Required Configuration:
 - **Application Type**: Single Page Application
 - **Allowed Callback URLs**: 
-  - `http://localhost:3000/api/auth/callback` (development)
+  - `http://localhost:3001/api/auth/callback` (development)
   - `https://everjust.dev/api/auth/callback` (production)
 - **Allowed Logout URLs**:
-  - `http://localhost:3000` (development)  
+  - `http://localhost:3001` (development)  
   - `https://everjust.dev` (production)
 - **Allowed Web Origins**:
-  - `http://localhost:3000` (development)
+  - `http://localhost:3001` (development)
   - `https://everjust.dev` (production)
 
 ## Step 3: Environment Variables
@@ -50,8 +50,8 @@ Add to your `.env` file:
 AUTH0_DOMAIN=your-tenant.auth0.com
 AUTH0_CLIENT_ID=your_client_id
 AUTH0_CLIENT_SECRET=your_client_secret
-AUTH0_CALLBACK_URL=http://localhost:3000/api/auth/callback
-AUTH0_BASE_URL=http://localhost:3000
+AUTH0_CALLBACK_URL=http://localhost:3001/api/auth/callback
+AUTH0_BASE_URL=http://localhost:3001
 ```
 
 ## Step 4: Integration Code

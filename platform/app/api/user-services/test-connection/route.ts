@@ -7,6 +7,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSession } from '@auth0/nextjs-auth0';
+import { connection } from 'next/server';
 import { UserConfigurableDatabaseService } from '@/lib/user-configurable-database-service';
 import { CredentialValidator } from '@/lib/credential-encryption';
 
@@ -21,6 +22,7 @@ const databaseService = new UserConfigurableDatabaseService(
  */
 export async function POST(request: NextRequest) {
   try {
+    await connection();
     const session = await getSession();
     if (!session?.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

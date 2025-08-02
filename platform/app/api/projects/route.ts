@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSession } from '@auth0/nextjs-auth0';
 import { getUserProjects, createProject, getUserByAuth0Id } from '@/lib/database';
+import { connection } from 'next/server';
 
 export async function GET(request: NextRequest) {
   try {
+    await connection();
     const session = await getSession();
     
     if (!session?.user) {
@@ -27,6 +29,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    await connection();
     const session = await getSession();
     
     if (!session?.user) {

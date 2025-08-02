@@ -1,9 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSession } from '@auth0/nextjs-auth0';
 import { getUserByAuth0Id, ensureUserExists } from '@/lib/database';
+import { connection } from 'next/server';
 
 export async function GET(request: NextRequest) {
   try {
+    // Fix for Next.js 15 async cookies API - Auth0 uses cookies() internally
+    await connection();
     const session = await getSession();
     
     if (!session?.user) {
@@ -26,6 +29,8 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    // Fix for Next.js 15 async cookies API - Auth0 uses cookies() internally
+    await connection();
     const session = await getSession();
     
     if (!session?.user) {

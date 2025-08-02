@@ -1,9 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // Minimal configuration for App Router only
-  experimental: {
-    serverComponentsExternalPackages: ['@anthropic-ai/claude-code', 'pg'],
-  },
+  serverExternalPackages: ['@anthropic-ai/claude-code', 'pg'],
   env: {
     AUTH0_SECRET: process.env.AUTH0_SECRET,
     AUTH0_BASE_URL: process.env.AUTH0_BASE_URL,

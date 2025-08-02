@@ -7,6 +7,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSession } from '@auth0/nextjs-auth0';
+import { connection } from 'next/server';
 import { UserConfigurableDatabaseService, ServiceSetupRequest } from '@/lib/user-configurable-database-service';
 import { DatabaseSchemaTemplates } from '@/lib/user-configurable-database-service';
 import { CredentialValidator } from '@/lib/credential-encryption';
@@ -25,6 +26,7 @@ databaseService.initializeMCPTools().catch(console.error);
  */
 export async function GET(request: NextRequest) {
   try {
+    await connection();
     const session = await getSession();
     if (!session?.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -64,6 +66,7 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
+    await connection();
     const session = await getSession();
     if (!session?.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -147,6 +150,7 @@ export async function POST(request: NextRequest) {
  */
 export async function PUT(request: NextRequest) {
   try {
+    await connection();
     const session = await getSession();
     if (!session?.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -205,6 +209,7 @@ export async function PUT(request: NextRequest) {
  */
 export async function DELETE(request: NextRequest) {
   try {
+    await connection();
     const session = await getSession();
     if (!session?.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

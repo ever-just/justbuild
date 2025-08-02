@@ -4,7 +4,9 @@ import type { User, Project, ProjectSession, Domain } from './supabase';
 // PostgreSQL connection pool
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+  ssl: {
+    rejectUnauthorized: false // DigitalOcean managed databases use valid certificates, but we'll be flexible
+  },
 });
 
 // User management functions

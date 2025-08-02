@@ -123,12 +123,14 @@ async function generateWebsite() {
   
   Important requirements:
   - Create a NextJS app with TypeScript and Tailwind CSS
-  - Use the app directory structure
+  - Use the app directory structure (app/page.tsx, app/layout.tsx)
   - Create all files in the current directory
   - Include a package.json with all necessary dependencies
   - Make the design modern and responsive
   - Add at least a home page and one other page
-  - Include proper navigation between pages
+  - Create navigation using Next.js Link components directly in layout.tsx (DO NOT create separate Navigation component files)
+  - Use Tailwind CSS for all styling
+  - Ensure all imported components and files are actually created
   \`;
 
   console.log('Starting website generation with Claude Code...');

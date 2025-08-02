@@ -106,7 +106,7 @@ function Dashboard() {
               </p>
             </div>
             <Link
-              href="/generate"
+              href="/new-project"
               className="px-6 py-3 bg-purple-600 hover:bg-purple-700 rounded-lg font-semibold transition-colors"
             >
               + New Project

@@ -19,6 +19,7 @@ function GeneratePageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const prompt = searchParams.get("prompt") || "";
+  const projectId = searchParams.get("projectId") || "";
   
   const [messages, setMessages] = useState<Message[]>([]);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -108,6 +109,13 @@ function GeneratePageContent() {
       const timeoutId = setTimeout(() => controller.abort(), 1800000); // 30 minute timeout (increased from 15min to accommodate longer server timeouts)
       
       const apiEndpoint = useRegularGeneration ? "/api/generate" : "/api/generate-daytona";
+      const requestBody: any = { prompt };
+      
+      // Include projectId if available (from manual project creation)
+      if (projectId && !projectId.startsWith('demo-project-')) {
+        requestBody.projectId = projectId;
+      }
+      
       const response = await fetch(apiEndpoint, {
         method: "POST",
         headers: {
@@ -115,7 +123,7 @@ function GeneratePageContent() {
           "Cache-Control": "no-cache",
           "Connection": "keep-alive",
         },
-        body: JSON.stringify({ prompt }),
+        body: JSON.stringify(requestBody),
         signal: controller.signal,
       });
       

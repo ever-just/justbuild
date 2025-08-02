@@ -440,7 +440,7 @@ platform/
 **Date**: January 23, 2025
 **Action**: Personal Access Token added to environment configuration
 
-- ✅ **Token**: `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`
+- ✅ **Token**: `[REDACTED_FOR_SECURITY]`
 - ✅ **File**: `config/environments/mcp-setup.env` updated
 - ✅ **Status**: GitHub MCP Server ready for activation
 - ✅ **Owner**: `everjust-dev` organization configured
@@ -513,7 +513,7 @@ platform/
 - ✅ **Environment Variables**: All tokens configured in ~/.zshrc
 - ✅ **MCP Configuration**: All servers in .cursor/mcp.json
 - ✅ **Authentication**: Auth0 device auth active (9 hours remaining)
-- ✅ **DigitalOcean Token**: New token configured and **VERIFIED WORKING** `dop_v1_a90fa7f16762b1b42e1c5fec6da3df102704ddbd98eb158d40e2ded432d35a47`
+- ✅ **DigitalOcean Token**: New token configured and **VERIFIED WORKING** `[REDACTED_FOR_SECURITY]`
 
 #### 📊 **MCP Tool Optimization Research Complete**
 **Date**: January 23, 2025

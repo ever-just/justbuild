@@ -1,7 +1,14 @@
-# 💾 Supabase Database Setup & Configuration
+# 💾 Database Setup & Configuration
 
 ## Overview
-Setting up Supabase as the primary database for EverJust.dev with real-time capabilities, user management, and project storage.
+Setting up PostgreSQL database for EverJust.dev with user management and project storage. 
+
+**✅ IMPLEMENTED: DigitalOcean Managed PostgreSQL**
+- **Database ID:** `188f1c78-e1ea-4dd5-aebc-030b8a97b18a`
+- **Name:** `everjust-platform-db`
+- **Engine:** PostgreSQL 15.0
+- **Region:** NYC1 (optimal for DigitalOcean App Platform deployment)
+- **Host:** `everjust-platform-db-do-user-24253030-0.m.db.ondigitalocean.com:25060`
 
 ## Step 1: Create Supabase Project
 

@@ -1,9 +1,16 @@
 import { createClient } from '@supabase/supabase-js';
 
+// DigitalOcean PostgreSQL Configuration
+const DATABASE_URL = process.env.DATABASE_URL || process.env.NEXT_PUBLIC_DATABASE_URL;
+
+// For now, keep Supabase client structure but we'll migrate to direct PostgreSQL
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co';
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-anon-key';
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+// TODO: Migrate to direct PostgreSQL connection
+// export const db = new Pool({ connectionString: DATABASE_URL });
 
 // Types for our database schema
 export interface User {

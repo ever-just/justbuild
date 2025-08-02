@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@anthropic-ai/claude-code": "1.0.64",
-    "@auth0/nextjs-auth0": "3.5.0",
+    "@auth0/nextjs-auth0": "^3.8.0",
     "@daytonaio/sdk": "0.25.1",
     "@types/pg": "^8.15.5",
     "autoprefixer": "^10.4.21",

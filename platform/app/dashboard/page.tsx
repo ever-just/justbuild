@@ -170,7 +170,7 @@ function Dashboard() {
             <div className="text-center py-12">
               <div className="text-gray-400 mb-4">No projects yet</div>
               <Link
-                href="/generate"
+                href="/new-project"
                 className="inline-flex items-center px-6 py-3 bg-purple-600 hover:bg-purple-700 rounded-lg font-semibold transition-colors"
               >
                 Create Your First Project
@@ -211,11 +211,28 @@ function Dashboard() {
 
                   {/* Project Actions */}
                   <div className="flex gap-2">
-                    <button className="flex-1 px-3 py-2 bg-purple-600 hover:bg-purple-700 rounded text-sm font-medium transition-colors">
-                      Continue
-                    </button>
+                    <Link
+                      href={`/claude?projectId=${project.id}&projectName=${encodeURIComponent(project.name)}`}
+                      className="flex-1 px-3 py-2 bg-purple-600 hover:bg-purple-700 rounded text-sm font-medium transition-colors text-center"
+                    >
+                      Continue with Claude
+                    </Link>
+                    <Link
+                      href={`/generate?prompt=Continue working on ${project.name}&projectId=${project.id}`}
+                      className="px-3 py-2 bg-green-600 hover:bg-green-700 rounded text-sm transition-colors"
+                    >
+                      Generate More
+                    </Link>
                     {(project.subdomain || project.custom_domain) && (
-                      <button className="px-3 py-2 bg-gray-700 hover:bg-gray-600 rounded text-sm transition-colors">
+                      <button 
+                        onClick={() => {
+                          const url = project.custom_domain 
+                            ? `https://${project.custom_domain}` 
+                            : `https://${project.subdomain}.everjust.dev`;
+                          window.open(url, '_blank');
+                        }}
+                        className="px-3 py-2 bg-gray-700 hover:bg-gray-600 rounded text-sm transition-colors"
+                      >
                         Visit
                       </button>
                     )}

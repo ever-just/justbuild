@@ -52,6 +52,9 @@ export default function ClaudePage() {
   const [showParallelMode, setShowParallelMode] = useState(false);
   const [error, setError] = useState<string>('');
   
+  // Project info from URL parameters
+  const [projectInfo, setProjectInfo] = useState<{projectId?: string, projectName?: string}>({});
+  
   // Refs
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -62,6 +65,17 @@ export default function ClaudePage() {
       router.push('/api/auth/login');
     }
   }, [user, isLoading, router]);
+
+  // Read project info from URL parameters
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      setProjectInfo({
+        projectId: params.get('projectId') || undefined,
+        projectName: params.get('projectName') || undefined
+      });
+    }
+  }, []);
 
   // Load usage data on mount
   useEffect(() => {
@@ -90,15 +104,20 @@ export default function ClaudePage() {
   const createNewSession = async () => {
     try {
       setError('');
-      const demoProjectId = 'demo-project-' + Date.now();
+      
+      // Use existing project ID if available, otherwise create demo project
+      const sessionProjectId = projectInfo.projectId || ('demo-project-' + Date.now());
+      const welcomeMessage = projectInfo.projectName 
+        ? `Hello! I'm ready to continue working on "${projectInfo.projectName}".`
+        : 'Hello! I\'m starting a new Claude Code session.';
       
       // Start streaming chat to create session
       const response = await fetch('/api/claude/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          prompt: 'Hello! I\'m starting a new Claude Code session.',
-          projectId: demoProjectId,
+          prompt: welcomeMessage,
+          projectId: sessionProjectId,
           config: {
             maxSubagents: 5,
             maxTokensPerSession: 25000,
@@ -411,18 +430,46 @@ export default function ClaudePage() {
             {!currentSession ? (
               <div className="flex items-center justify-center h-full">
                 <div className="text-center">
-                  <h2 className="text-xl font-semibold mb-4">Welcome to Enhanced Claude Code</h2>
-                  <p className="text-gray-400 mb-6">
-                    Start a new session to experience advanced AI development with session management, 
-                    parallel subagents, and comprehensive usage tracking.
-                  </p>
+                  {projectInfo.projectName ? (
+                    <>
+                      <h2 className="text-xl font-semibold mb-2">Continue Working on</h2>
+                      <h1 className="text-3xl font-bold text-purple-400 mb-4">{projectInfo.projectName}</h1>
+                      <p className="text-gray-400 mb-6">
+                        Resume your AI development session with enhanced tools, session management, 
+                        and parallel subagents. Your project context will be loaded automatically.
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <h2 className="text-xl font-semibold mb-4">Welcome to Enhanced Claude Code</h2>
+                      <p className="text-gray-400 mb-6">
+                        Start a new session to experience advanced AI development with session management, 
+                        parallel subagents, and comprehensive usage tracking.
+                      </p>
+                    </>
+                  )}
                   <button
                     onClick={createNewSession}
                     disabled={isStreaming}
                     className="px-6 py-3 bg-purple-600 hover:bg-purple-700 rounded-lg transition-colors disabled:opacity-50"
                   >
-                    {isStreaming ? 'Creating Session...' : 'Start New Session'}
+                    {isStreaming 
+                      ? 'Creating Session...' 
+                      : projectInfo.projectName 
+                        ? `Resume "${projectInfo.projectName}"` 
+                        : 'Start New Session'
+                    }
                   </button>
+                  {projectInfo.projectName && (
+                    <div className="mt-4">
+                      <Link
+                        href="/dashboard" 
+                        className="text-sm text-gray-400 hover:text-gray-300 transition-colors"
+                      >
+                        ← Back to Dashboard
+                      </Link>
+                    </div>
+                  )}
                 </div>
               </div>
             ) : (
